@@ -1,0 +1,6 @@
+# Direct dependencies pinned for the tested baseline; not a transitive lockfile.
+streamlit==1.45.1
+altair==5.5.0
+httpx==0.28.1
+python-dotenv==1.1.0
+pypdf==6.21.1

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "breakout-ai"
+version = "0.6.0"
+description = "Vietnamese stock learning and research assistant for Vietnam and US markets"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["streamlit==1.45.1", "altair==5.5.0", "httpx==0.28.1", "python-dotenv==1.1.0", "pypdf==6.21.1"]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.4"]
+
+[tool.setuptools.packages.find]
+include = ["breakout_ai*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

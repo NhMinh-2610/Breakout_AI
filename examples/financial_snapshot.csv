@@ -1,0 +1,3 @@
+market,symbol,currency,price,eps_ttm,bvps,dividend_per_share,as_of,source
+VN,DEMO,VND,100000,5000,40000,2000,2026-10-01,Synthetic example - NOT real market data
+US,DEMO,USD,100,5,40,2,2026-10-01,Synthetic example - NOT real market data
