@@ -1,0 +1,83 @@
+[
+  {
+    "id": "K01", "title": "Cổ phiếu và nguồn lợi nhuận", "market": "GLOBAL",
+    "keywords": ["cổ phiếu", "chứng khoán", "stock", "equity", "cổ tức", "dividend", "lợi nhuận"],
+    "explanation": "Cổ phiếu thể hiện quyền sở hữu một phần doanh nghiệp. Người nắm giữ có thể hưởng chênh lệch giá và cổ tức nếu doanh nghiệp chi trả. Giá cũng có thể giảm; cổ tức không phải khoản thu chắc chắn.",
+    "example": "Mua 10 cổ phiếu giả định giá 100, bán giá 110: chênh lệch gộp là 100 đơn vị tiền, chưa tính phí và thuế.",
+    "caveat": "Tăng giá và cổ tức là hai thành phần khác nhau. Một mã có trả cổ tức vẫn có thể mất giá.",
+    "question": "Bạn muốn phân biệt cổ tức tiền mặt với chênh lệch giá?",
+    "source_title": "Investor.gov — Stocks", "source_url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K02", "title": "P/E và EPS: giá so với lợi nhuận", "market": "GLOBAL",
+    "keywords": ["pe", "p/e", "eps", "earnings per share", "price earnings", "định giá", "lợi nhuận mỗi cổ phiếu"],
+    "explanation": "P/E = giá một cổ phiếu / EPS. EPS là lợi nhuận trên mỗi cổ phiếu. Khi so sánh, cần thống nhất kỳ lợi nhuận; EPS TTM dùng 12 tháng gần nhất. P/E thấp tự nó chưa đủ chứng minh cổ phiếu rẻ.",
+    "example": "Giá giả định 100.000 VND, EPS TTM 5.000 VND: P/E = 20 lần. Giá 100 USD và EPS 5 USD cũng cho P/E 20 lần.",
+    "caveat": "Khi EPS bằng 0 hoặc âm, công cụ không trình bày P/E như bội số định giá dương. Lợi nhuận bất thường có thể làm lệch việc so sánh.",
+    "question": "Bạn muốn thử công thức với số liệu tự nhập trong Công cụ?",
+    "source_title": "Investor.gov — Price-earnings (P/E) Ratio", "source_url": "https://www.investor.gov/introduction-investing/investing-basics/glossary/price-earnings-pe-ratio", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K03", "title": "P/B: so sánh giá với giá trị sổ sách", "market": "GLOBAL",
+    "keywords": ["pb", "p/b", "bvps", "book value", "giá trị sổ sách", "vốn chủ sở hữu"],
+    "explanation": "P/B = giá cổ phiếu / giá trị sổ sách mỗi cổ phiếu (BVPS). Đây là phép so sánh với số liệu kế toán, không phải giá bán chắc chắn của doanh nghiệp.",
+    "example": "Giá giả định 60, BVPS 30 cùng đơn vị tiền: P/B = 2 lần.",
+    "caveat": "BVPS không dương làm P/B khó diễn giải. Chất lượng tài sản cần được xem xét riêng.",
+    "question": "Bạn muốn đọc bảng cân đối kế toán?",
+    "source_title": "FINRA — Defining the Value of an Investment", "source_url": "https://syndication.finra.org/content/defining-value-investment", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K04", "title": "Đọc báo cáo tài chính từ ba góc nhìn", "market": "GLOBAL",
+    "keywords": ["báo cáo tài chính", "bctc", "cash flow", "dòng tiền", "doanh thu", "balance sheet", "income statement"],
+    "explanation": "Bảng cân đối cho biết tài sản, nợ và vốn tại một thời điểm. Báo cáo kết quả mô tả doanh thu, chi phí trong một kỳ. Báo cáo lưu chuyển tiền tệ giải thích biến động tiền.",
+    "example": "Doanh nghiệp giả định có lãi nhưng tiền bị giữ trong khoản phải thu: lợi nhuận và tiền thu về khác nhau.",
+    "caveat": "Đọc cùng kỳ và đơn vị, kèm thuyết minh.",
+    "question": "Bạn muốn tìm hiểu dòng tiền hoạt động?",
+    "source_title": "SEC — Beginners' Guide to Financial Statements", "source_url": "https://www.sec.gov/about/reports-publications/beginners-guide-financial-statements", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K05", "title": "Đa dạng hóa và rủi ro tập trung", "market": "GLOBAL",
+    "keywords": ["đa dạng hóa", "diversification", "rủi ro", "risk", "danh mục", "portfolio", "phân bổ", "asset allocation"],
+    "explanation": "Đa dạng hóa là phân tán khoản đầu tư giữa nhiều tài sản hoặc doanh nghiệp để giảm rủi ro tập trung. Nhiều mã cùng chịu một yếu tố rủi ro vẫn có thể biến động cùng chiều.",
+    "example": "Danh mục giả định gồm năm công ty cùng ngành có thể tập trung hơn danh mục trải qua nhiều ngành.",
+    "caveat": "Đa dạng hóa không bảo đảm tránh thua lỗ khi thị trường giảm. Cần xem tỷ trọng, mức trùng lặp và thời gian đầu tư.",
+    "question": "Bạn muốn lập checklist đánh giá rủi ro tập trung?",
+    "source_title": "Investor.gov — Asset Allocation and Diversification", "source_url": "https://www.investor.gov/introduction-investing/getting-started/asset-allocation", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K06", "title": "ETF và những điều cần đọc trước", "market": "GLOBAL",
+    "keywords": ["etf", "quỹ", "fund", "index", "chỉ số", "chứng chỉ quỹ"],
+    "explanation": "ETF là quỹ có chứng chỉ được mua bán trên sàn. Quỹ có thể theo một chỉ số hoặc chiến lược khác. Khi nghiên cứu, cần đọc danh mục nắm giữ, mục tiêu, phí và cách vận hành.",
+    "example": "ETF giả định chỉ tập trung một ngành vẫn chịu rủi ro của ngành đó; tên gọi ETF chưa cho biết mức đa dạng hóa.",
+    "caveat": "Giá giao dịch có thể khác giá trị tài sản ròng. Không suy ra mức phí hoặc thành phần quỹ từ một ví dụ chung.",
+    "question": "Bạn muốn phân biệt chỉ số với quỹ theo chỉ số?",
+    "source_title": "Investor.gov — Exchange-Traded Funds", "source_url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products/mutual-funds-and-exchange-traded-2", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K07", "title": "Mỹ: tìm hồ sơ doanh nghiệp trên SEC", "market": "US",
+    "keywords": ["mỹ", "us", "sec", "edgar", "10k", "10q", "8k", "10-k", "10-q", "8-k", "filing", "công bố mỹ"],
+    "explanation": "Với doanh nghiệp thuộc diện báo cáo tại SEC, Form 10-K là báo cáo năm, 10-Q là báo cáo quý và 8-K dùng công bố một số sự kiện quan trọng. EDGAR là nơi tìm các hồ sơ đã nộp.",
+    "example": "Khi đọc một 10-K, ghi lại tên pháp nhân, năm tài chính, ngày nộp và đơn vị trình bày trước khi so sánh.",
+    "caveat": "Doanh nghiệp nước ngoài có thể dùng bộ biểu mẫu khác. Không áp dụng mặc định tên biểu mẫu Mỹ cho công ty Việt Nam.",
+    "question": "Bạn muốn checklist đọc một báo cáo năm?",
+    "source_title": "Investor.gov — Public Companies", "source_url": "https://www.investor.gov/introduction-investing/investing-basics/how-stock-markets-work/public-companies", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K08", "title": "Việt Nam: kiểm tra nguồn công bố doanh nghiệp", "market": "VN",
+    "keywords": ["việt nam", "vn", "hose", "hsx", "hnx", "upcom", "công bố thông tin", "quan hệ nhà đầu tư", "ir"],
+    "explanation": "Khi nghiên cứu cổ phiếu Việt Nam, bắt đầu từ trang quan hệ nhà đầu tư của doanh nghiệp và cổng thông tin của sở giao dịch liên quan. Đối chiếu đúng mã, tên doanh nghiệp, ngày công bố và kỳ báo cáo.",
+    "example": "Lưu ghi chú gồm: mã giả định DEMO, báo cáo quý nào, ngày tải và đường dẫn tài liệu gốc.",
+    "caveat": "Breakout AI chưa đồng bộ công bố từ sở giao dịch. Phiên giao dịch, quy tắc lệnh và chu kỳ thanh toán cần kiểm tra văn bản hiện hành của thị trường đó.",
+    "question": "Bạn muốn tạo ghi chú nghiên cứu trong Sổ theo dõi?",
+    "source_title": "HOSE — Cổng thông tin chính thức (điểm bắt đầu tra cứu)", "source_url": "https://www.hsx.vn/", "reviewed_at": "2026-10-17"
+  },
+  {
+    "id": "K09", "title": "Đầu tư quốc tế: tách lợi nhuận và tỷ giá", "market": "GLOBAL",
+    "keywords": ["tỷ giá", "ngoại tệ", "usd", "vnd", "currency", "fx", "quốc tế", "international", "quy đổi"],
+    "explanation": "Khi dùng VND để đầu tư tài sản định giá bằng USD, kết quả quy về VND phụ thuộc cả biến động tài sản và tỷ giá. Các phép so sánh số tiền cần thống nhất đồng tiền trước.",
+    "example": "Tài sản giả định tăng 10% bằng USD không đồng nghĩa lợi nhuận quy về VND cũng đúng 10%.",
+    "caveat": "Công cụ hiện tại giữ riêng VND và USD, chưa lấy tỷ giá hay tính thuế, phí chuyển đổi.",
+    "question": "Bạn muốn phân biệt chỉ số không có đơn vị với số tiền?",
+    "source_title": "Investor.gov — International Investing", "source_url": "https://www.investor.gov/introduction-investing/investing-basics/investment-products/international-investing", "reviewed_at": "2026-10-17"
+  }
+]
