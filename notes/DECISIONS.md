@@ -1,5 +1,6 @@
 # Quyết định thiết kế Breakout AI
-Bản tổng hợp hiện hành cho 0.6. Những thay đổi theo phiên bản nằm trong CHANGELOG; bản sao mã/tài liệu trước đổi tên đã được lưu trước khi biên tập.
+
+Bản tổng hợp hiện hành cho 0.7. Những thay đổi theo phiên bản nằm trong CHANGELOG; bản sao mã/tài liệu trước đổi tên đã được lưu trước khi biên tập.
 
 | ID | Quyết định | Lý do | Khi xem lại |
 | --- | --- | --- | --- |
@@ -19,5 +20,7 @@ Bản tổng hợp hiện hành cho 0.6. Những thay đổi theo phiên bản n
 | ADR-14 | Theme tối, giới hạn chiều rộng | Hợp bảng điện, giảm kéo giãn và mất cân đối | Đo khả năng đọc và nhu cầu theme |
 | ADR-15 | Task Windows 07:30 Limited/Interactive | Giờ người dùng chọn, không cần server | Trước SaaS cần scheduler giám sát |
 | ADR-16 | Tách bằng chứng test và hình ảnh | Test pass không chứng minh UX hoặc lợi nhuận | Luôn giữ nguyên tắc này |
+| ADR-17 | Snapshot DNSE riêng, polling mặc định 5 giây và tối đa 30 mã | Có dữ liệu bảng điện cho bản phát triển; không gán snapshot thành luồng tick hoặc trộn vào tín hiệu ngày | Khi có hợp đồng dữ liệu và API stream chính thức |
+| ADR-18 | Bảng rộng cuộn riêng, tiêu đề/cột mã cố định | Giữ đủ nhóm số liệu mà không ép cột; tăng khoảng cách khối và control để thao tác rõ | Sau QA trình duyệt và phản hồi người dùng |
 
 Quyết định mới phải nêu vấn đề, lựa chọn, đánh đổi, bằng chứng và điều kiện xem lại.

@@ -144,6 +144,7 @@ def test_market_form_renders_real_fixture_chart_with_currency_and_source(monkeyp
         return quote
     monkeypatch.setattr(MarketService, "get", get)
     at.sidebar.radio[0].set_value("Thị trường").run()
+    at.radio(key="market_view").set_value("Biểu đồ VN / US").run()
     at.selectbox(key="chart_market").set_value("US")
     at.text_input(key="chart_symbol").set_value("AAPL")
     button(at, "Xem và cập nhật biểu đồ").click().run()

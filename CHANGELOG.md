@@ -1,6 +1,13 @@
 # Changelog — Breakout AI
 
-## Chưa phát hành — 2026-10-19
+## 0.7.0 — 2026-10-19
+
+- Thêm bảng điện Việt Nam dùng snapshot công khai DNSE, nhịp 5/10/30 giây, tạm dừng và cập nhật thủ công.
+- Nhóm ba mức mua/bán, khớp lệnh, trần/sàn/tham chiếu, tổng giao dịch, OHLC/bình quân và khối ngoại; hiển thị giờ nguồn và trạng thái cũ.
+- Theo dõi tối đa 30 mã, lọc sàn/tìm/sắp xếp, chọn mã chi tiết và bảng đầy đủ/rút gọn; giữ biểu đồ ngày VN/Mỹ trong chế độ riêng.
+- Mở rộng trang thị trường 1760px, cố định tiêu đề/cột mã khi cuộn, giãn khối 24px/thẻ 16px và ô bảng 8×12px.
+- Tách nguồn snapshot khỏi bản tin ngày; thêm tài liệu cơ chế polling, đơn vị và giới hạn nguồn.
+- 366 kiểm thử đạt; API thật 6 mã và HTTP smoke đạt. Chưa có QA hình ảnh trình duyệt.
 - Tự tải giá khi thiếu/cũ, kiểm tra mỗi 5 phút và nút cập nhật theo nhóm trên Tổng quan.
 - Bảng theo dõi giữ dòng thiếu dữ liệu, hiện riêng giá cũ và nguồn/tiền tệ/phiên.
 - Batch dùng chung HTTP pool tối đa ba kết nối; loại trùng sau chuẩn hóa mã.
@@ -9,6 +16,7 @@
 
 
 ## 0.6.0 — 2026-10-19
+
 - Nhận diện Breakout AI trên tiêu đề, sidebar, chat, logo/favicon, tệp xuất và prompt.
 - Package breakout_ai, metadata breakout-ai và CLI mới; giữ lựa chọn DB cũ, schema v4 và dữ liệu hiện có.
 - Giới hạn chiều rộng trang, căn sidebar/thẻ/dải giá; khung chat và ô nhập dùng cùng chiều rộng, news toolbar cùng hàng.
