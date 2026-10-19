@@ -4,6 +4,7 @@ from breakout_ai.config import ROOT
 from breakout_ai.news import NewsResult, NewsService
 from breakout_ai.market import MarketService
 from breakout_ai.realtime import RealtimeService, BoardSnapshot
+from breakout_ai.intraday import IntradayService, IntradaySnapshot
 
 
 def app(monkeypatch, tmp_path):
@@ -15,6 +16,8 @@ def app(monkeypatch, tmp_path):
         monkeypatch.setattr(MarketService, "many", lambda self, symbols, force=False: ([], ["Nguồn giá giả lập đang ngoại tuyến."]))
     if RealtimeService.fetch.__module__ == "breakout_ai.realtime":
         monkeypatch.setattr(RealtimeService, "fetch", lambda self, symbols, force=False: BoardSnapshot(errors=["Nguồn snapshot thử nghiệm đang ngoại tuyến."]))
+    if IntradayService.fetch.__module__ == "breakout_ai.intraday":
+        monkeypatch.setattr(IntradayService, "fetch", lambda self, symbol, resolution="5", force=False: IntradaySnapshot(symbol, resolution=resolution, errors=["Nguồn nến thử nghiệm đang ngoại tuyến."]))
     return AppTest.from_file(str(ROOT / "app.py"), default_timeout=20).run()
 
 

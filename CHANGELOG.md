@@ -1,5 +1,17 @@
 # Changelog — Breakout AI
 
+## 0.8.0 — 2026-10-19
+
+- Sửa cột bị ép/chồng do gap ngang khác cách Streamlit tính độ rộng; giới hạn selector panel để khối tổ tiên không nhận padding/border. Cột thường giữ gap 16px, lưới chính và panel có khoảng đệm riêng.
+- Thêm bốn thẻ VN-Index/VN30/HNX-Index/UPCoM-Index từ dữ liệu điểm thật và đường diễn biến nến 5 phút.
+- Đặt bảng giá phía trên, biểu đồ/phân tích phía dưới: nến 1/5/15 phút, SMA20, hỗ trợ/kháng cự, khối lượng và cung cầu ba mức.
+- Thêm Phân tích, Chat theo mã và Cơ hội hôm nay; quét tối đa 6 mã sau thao tác bắt đầu, tải tối đa 3 mã đồng thời.
+- Tín hiệu dùng nến đã đóng và quote đủ mới; lỗi/cũ/thiếu chuyển sang chờ. Rà soát bán chỉ xét mã sở hữu; số điều kiện đạt không phải xác suất lợi nhuận.
+- Chat chụp bối cảnh khi gửi, truy xuất sách để giải thích và lưu cùng lịch sử hiện có. Tự cập nhật thị trường không gọi LLM.
+- Tách nhịp snapshot 5/10/30 giây, nến 30 giây và chỉ số 60 giây; vẫn là polling, chưa có tick stream hoặc đặt lệnh tự động.
+- Bổ sung tài liệu nguồn nến/chỉ số, quy tắc phân tích, kiến trúc và nghiệm thu. 509 kiểm thử đạt; smoke nguồn nến/chỉ số thật và HTTP thành công. Chi tiết tại docs/TESTING.md.
+- Chưa xác minh screenshot/mobile vì Browser không khả dụng; không xem kiểm thử widget/CSS parser là bằng chứng bố cục thực tế.
+
 ## 0.7.0 — 2026-10-19
 
 - Thêm bảng điện Việt Nam dùng snapshot công khai DNSE, nhịp 5/10/30 giây, tạm dừng và cập nhật thủ công.

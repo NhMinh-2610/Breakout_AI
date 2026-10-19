@@ -1,5 +1,17 @@
 # Nhật ký Breakout AI
 
+## 19/10/2026 — Bản 0.8, bố cục bảng điện và phân tích theo mã
+
+Ảnh người dùng cung cấp cho thấy nội dung bị ép và chữ sát mép. Đối chiếu DOM/width calculation của Streamlit phát hiện gap ngang CSS 24px khác gap 16px mà cột gốc dùng tính độ rộng; selector panel :has quá rộng cũng áp border/padding lên khối tổ tiên. Sửa về gap gốc cho cột thường, dùng lưới có key để quản lý width/gap và giới hạn selector wrapper/con trực tiếp. Nội dung chính/panel có khoảng đệm riêng.
+
+Không gian thị trường gồm bốn chỉ số thật dạng gọn, hàng điều khiển sáu cột và dải thống kê nhỏ thay cho metric lớn; bỏ tiêu đề lớn bị lặp. Nhịp tải/chế độ bảng/danh sách mã chuyển vào popover Tùy chọn bảng. Bảng giá rộng phía trên và khu vực theo mã phía dưới. Biểu đồ nến/khối lượng có SMA20, hỗ trợ/kháng cự; cung cầu ba mức tách giờ nguồn. Bên phải có phân tích, chat theo mã và quét tối đa 6 mã. Scanner chỉ bắt đầu sau thao tác người dùng rồi cập nhật theo dữ liệu khi tự tải bật.
+
+Nguồn OHLCV công khai DNSE đã kiểm tra trực tiếp cho VIC và bốn chỉ số. Giá cổ phiếu nến nhân 1.000 VND, volume giữ số cổ phiếu; index giữ điểm. Snapshot giá 5/10/30 giây, nến cache 30 giây và index 60 giây. Chưa tích hợp luồng tick đẩy.
+
+Bộ kỹ thuật chỉ dùng nến đã đóng, quote mới và dữ liệu đủ điều kiện; lỗi/cũ chuyển chờ, bán chỉ xét mã sở hữu. Không suy luận “giá thấp nghĩa là đáy”. Sách truy xuất để giải thích, chưa tự học thành chiến lược. Chat chụp bối cảnh lúc gửi, lưu lịch sử và không tự gọi model theo chu kỳ thị trường.
+
+509 kiểm thử toàn bộ, smoke nguồn nến/chỉ số thật và HTTP đạt. [Kiểm thử](../docs/TESTING.md) ghi kết quả tích hợp/toàn bộ và giới hạn còn lại. Browser không khả dụng; sửa selector chưa phải xác minh screenshot/pixel/mobile.
+
 ## 19/10/2026 — Bảng điện Việt Nam
 
 Bổ sung chế độ bảng điện theo bố cục nhóm mua/khớp/bán, dùng snapshot công khai DNSE tải theo chu kỳ 5/10/30 giây. Tối đa 30 mã do người dùng chọn, lọc sàn/tìm/sắp xếp, bảng đầy đủ/rút gọn, tạm dừng và xem chi tiết mã. Giữ biểu đồ ngày VN/Mỹ riêng; không thay điều kiện bản tin mua/bán.

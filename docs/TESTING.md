@@ -1,4 +1,33 @@
-# Kiểm thử Breakout AI 0.7
+# Kiểm thử Breakout AI 0.8
+
+## Phạm vi bản 0.8 — 19/10/2026
+
+**509 kiểm thử đạt**, không lỗi, thời gian 120.11 giây. Có 47 ca adapter nến/chỉ số, 41 ca kỹ thuật, 45 ca copilot/biểu đồ và 10 ca tích hợp workbench mới. Các mốc 366/247 bên dưới thuộc bản trước. JUnit: .artifacts/terminal-v08-tests.xml.
+
+- CSS: 408 rule không lỗi, 92 liên kết Markdown nội bộ hợp lệ. Cấu trúc selector đối chiếu frontend Streamlit 1.45.1; .artifacts/css-layout-evidence.json.
+- HTTP trang/health đều 200, tiến trình thử đã dừng: .artifacts/terminal-v08-http-smoke.json.
+- Compileall đạt. Bản tổng hợp bằng chứng: .artifacts/terminal-v08-validation.json.
+- Một cảnh báo deprecation Altair từ Streamlit không làm lỗi kiểm thử. Chưa xác minh hình ảnh trình duyệt.
+
+Đã chạy riêng **47 kiểm thử adapter intraday đạt**: đơn vị cổ phiếu/chỉ số, khung 1/5/15 phút, nến đang hình thành, khối lượng thiếu, dữ liệu lỗi, giới hạn phản hồi, cache theo workspace, thời gian nguồn cũ, cooldown 403/429 và chống request trùng giữa nhiều instance.
+
+Smoke service thật ngày 19/10/2026 lấy được VIC 230 nến, VNINDEX 230, VN30 230, HNX 245 và UPCOM 270 trong cửa sổ 7 ngày. Ngoài giờ giao dịch, nguồn được đánh dấu cũ đúng; không dùng lần HTTP 200 này để khẳng định feed có SLA hoặc cập nhật từng tick. Artifact: `.artifacts/intraday-live-smoke.json`.
+
+Phạm vi nghiệm thu tích hợp:
+
+- Chỉ báo/tín hiệu: RSI, SMA20, vùng giá và khối lượng nền loại nến xác nhận; nến chưa đóng không xác nhận tín hiệu; giá/nến cũ hoặc lỗi chặn hành động; rà soát bán chỉ cho mã sở hữu.
+- Biểu đồ: giá/khối lượng giữ đúng đơn vị, chỉ số giữ điểm, nguồn thiếu không dựng đường giả, nến đang hình thành có trạng thái riêng.
+- Workbench: bảng giá phía trên, mã đang xem ổn định, đổi khung nến, tạm dừng không gọi nguồn, scanner tối đa 6 mã sau thao tác bắt đầu.
+- Chat: câu hỏi lấy bối cảnh mã khi gửi, lưu lịch sử, không tự gửi lại khi fragment cập nhật; model không được gọi theo chu kỳ tải thị trường.
+- Layout: gap ngang cột gốc giữ 16px, lưới có key quản lý width/gap riêng, selector panel không áp border/padding lên toàn bộ khối tổ tiên.
+
+Chạy phần mới:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_intraday.py tests/test_technical.py tests/test_workbench_ui.py
+```
+
+Kiểm tra CSS/parser và AppTest không đo vị trí phần tử trên màn hình. Browser không khả dụng trong phiên; chưa xác minh screenshot/pixel/mobile. Cần kiểm tra lại ảnh thật theo các kích thước ở [UI/UX](UI_UX.md).
 
 ## Kết quả bản 0.7 — 19/10/2026
 
@@ -50,6 +79,8 @@ Chạy tập trung trước khi chạy toàn bộ:
 | Storage, config | Scope workspace, quota, schema, cấu hình và lựa chọn DB sau đổi tên |
 | Market, news | Hợp đồng HTTP giả lập, cache, stale, URL/XML và nguồn |
 | Realtime, priceboard | Snapshot DNSE, đơn vị, độ sâu, thời gian nguồn, cache và HTML bảng điện |
+| Intraday, technical | Nến/chỉ số, đơn vị riêng, cache/cooldown, chỉ báo và kiểm tra tín hiệu |
+| Workbench, copilot | Biểu đồ, mã/khung nến, chat bối cảnh và scanner theo thao tác |
 | Books, knowledge | Trích xuất, trang/đoạn, giới hạn, scope và truy xuất |
 | Providers, tutor, research | Request/response, lỗi, lịch sử, nguồn và phạm vi |
 | Daily | Nguyên tắc, kết hợp điều kiện, mốc phiên, fingerprint, thiếu dữ liệu |

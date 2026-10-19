@@ -93,7 +93,8 @@ def test_market_defaults_to_full_live_board_without_daily_chart(workspace):
     rows = board_rows(at)
     assert len(rows) == 4 and all(len(row["cells"]) == 29 for row in rows)
     assert at.selectbox(key="board_selected").options == ["ACV", "FPT", "PVS", "VCB"]
-    assert not at.get("arrow_vega_lite_chart")
+    # The board includes a sourced order-depth chart; the daily chart stays in its own view.
+    assert len(at.get("arrow_vega_lite_chart")) == 1
     assert not any(item.key == "chart_symbol" for item in at.text_input)
     assert workspace.calls["fetch"] == [(workspace.symbols, False, 5)]
     assert any("Snapshot DNSE · cập nhật 5 giây" in item.value for item in at.markdown)

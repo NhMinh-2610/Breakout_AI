@@ -23,6 +23,7 @@ from breakout_ai.portfolio import Portfolio
 from breakout_ai.providers import ProviderError
 from breakout_ai.storage import Store
 from breakout_ai.tutor import STYLES, Tutor, chat_turn
+from breakout_ai.workbench import render_workbench, render_indices
 
 st.set_page_config(page_title=f"{NAME} · Nghiên cứu đầu tư", page_icon=str(ROOT / "assets" / "favicon.png"), layout="wide", initial_sidebar_state="expanded")
 BRAND_MARK = (ROOT / "assets" / "brand-mark.svg").read_text(encoding="utf-8")
@@ -610,18 +611,23 @@ def save_board_symbols(store: Store, raw: str) -> None:
 
 @st.fragment(run_every=5)
 def live_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> None:
+    with st.container(key="market_terminal"):
+        render_priceboard(settings, store, portfolio)
+
+
+def render_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> None:
     symbols = board_symbols(store, portfolio)
+    render_indices(settings, store, auto=st.session_state.get("board_auto", True))
     with st.container(key="live_board_controls"):
-        exchange_col, search_col, sort_col, interval_col = st.columns([1, 1.4, 1.4, 1], vertical_alignment="bottom")
+        exchange_col, search_col, sort_col, auto_col, edit_col, refresh_col = st.columns([1, 1.25, 1.35, 1, 1, 1.1], vertical_alignment="bottom")
         exchange = exchange_col.selectbox("Sàn giao dịch", ["Tất cả", "HOSE", "HNX", "UPCOM"], key="board_exchange")
-        search = search_col.text_input("Tìm mã", placeholder="Ví dụ: FPT", max_chars=10, key="board_search").strip().upper()
+        search = search_col.text_input("Tìm mã", placeholder="Ví dụ: VIC", max_chars=10, key="board_search").strip().upper()
         order = sort_col.selectbox("Sắp xếp", ["Mã A → Z", "Tăng giá nhiều nhất", "Giảm giá nhiều nhất", "Khối lượng lớn nhất"], key="board_sort")
-        interval = interval_col.selectbox("Nhịp cập nhật", [5, 10, 30], format_func=lambda value: f"{value} giây", key="board_interval")
-        auto_col, full_col, edit_col, refresh_col = st.columns([1, 1.1, 1.1, 1.3], vertical_alignment="center")
         auto = auto_col.checkbox("Tự cập nhật", value=True, key="board_auto", disabled=not settings.market_enabled)
-        full = full_col.checkbox("Đầy đủ thông tin", value=True, key="board_full")
-        with edit_col.popover("Danh sách mã", use_container_width=True):
-            st.caption("Thêm mã cổ phiếu Việt Nam để xem bảng điện. Bộ lọc bên dưới áp dụng cho danh sách này.")
+        with edit_col.popover("Tùy chọn bảng", use_container_width=True):
+            interval = st.selectbox("Nhịp cập nhật", [5, 10, 30], format_func=lambda value: f"{value} giây", key="board_interval")
+            full = st.checkbox("Đầy đủ thông tin", value=True, key="board_full")
+            st.caption(f"Danh sách theo dõi · tối đa {MAX_SYMBOLS} mã. Bộ lọc áp dụng cho danh sách này.")
             st.session_state.setdefault("board_symbols_input", ", ".join(symbols))
             with st.form("board_symbols_form"):
                 raw = st.text_area("Mã trên bảng điện", key="board_symbols_input", height=90, max_chars=450)
@@ -633,7 +639,7 @@ def live_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> N
                     st.success("Đã lưu danh sách bảng điện.")
                 except ValueError as exc:
                     st.error(str(exc))
-        refresh = refresh_col.button("Làm mới bảng giá", type="primary", key="board_refresh", use_container_width=True, disabled=not settings.market_enabled)
+        refresh = refresh_col.button("Làm mới", type="primary", key="board_refresh", use_container_width=True, disabled=not settings.market_enabled)
     service = RealtimeService(store, poll_seconds=interval)
     if settings.market_enabled and (auto or refresh):
         snapshot = service.fetch(symbols, force=refresh)
@@ -658,11 +664,10 @@ def live_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> N
                 st.text(error)
     priced = [quotes[symbol] for symbol in visible if symbol in quotes and quotes[symbol].last is not None]
     with st.container(key="live_board_summary"):
-        first, second, third, fourth = st.columns(4)
-        first.metric("Mã đang hiển thị", f"{len(visible)} / {len(symbols)}")
-        second.metric("Tăng · danh sách đang xem", sum(quote.change is not None and quote.change > 0 for quote in priced))
-        third.metric("Giảm · danh sách đang xem", sum(quote.change is not None and quote.change < 0 for quote in priced))
-        fourth.metric("Tham chiếu · đang xem", sum(quote.change == 0 for quote in priced))
+        up = sum(quote.change is not None and quote.change > 0 for quote in priced)
+        down = sum(quote.change is not None and quote.change < 0 for quote in priced)
+        flat = sum(quote.change == 0 for quote in priced)
+        st.markdown(f'<div class="priceboard-summary"><span>Đang xem <strong>{len(visible)}/{len(symbols)}</strong> mã</span><span class="price-up">Tăng <strong>{up}</strong></span><span class="price-down">Giảm <strong>{down}</strong></span><span class="price-ref">Tham chiếu <strong>{flat}</strong></span><span>Trong danh sách theo dõi</span></div>', unsafe_allow_html=True)
     if snapshot.stale or any(quote.stale for quote in snapshot.quotes):
         st.caption("Dòng mờ: giờ khớp nguồn đã quá 3 phút hoặc chưa có giờ nguồn; có thể ngoài phiên hoặc mã chưa phát sinh giao dịch mới. Độ sâu cũ được ẩn.")
     selected = None
@@ -675,34 +680,17 @@ def live_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> N
     st.markdown(board_table(snapshot.quotes, visible, selected=selected, full=full), unsafe_allow_html=True)
     st.markdown('<div class="priceboard-legend"><span class="price-ceiling">● Trần</span><span class="price-up">● Tăng</span><span class="price-ref">● Tham chiếu</span><span class="price-down">● Giảm</span><span class="price-floor">● Sàn</span><span>— Chưa có dữ liệu</span></div>', unsafe_allow_html=True)
     if visible:
-        selected = st.selectbox("Chi tiết mã", detail_symbols, key="board_selected")
-    quote = quotes.get(selected)
-    if quote:
-        with st.container(key="market_detail_panels"):
-            details, depth = st.columns([1.2, 1], gap="medium")
-            with details:
-                with st.container(border=True):
-                    st.markdown(f'<div class="panel-title">{escape(quote.symbol)} <span class="market-tag">{escape(quote.exchange)}</span> · Thông tin phiên</div>', unsafe_allow_html=True)
-                    left, right = st.columns(2)
-                    left.metric("Giá khớp · VND / CP", format_number(quote.last), f"{quote.change_pct:+.2f}%" if quote.change_pct is not None else None)
-                    right.metric("Tổng khối lượng · CP", format_number(quote.total_volume))
-                    st.caption(f"Mở {format_number(quote.open)} · Cao {format_number(quote.high)} · Thấp {format_number(quote.low)} · TB {format_number(quote.average)} VND")
-                    st.caption(f"Nước ngoài · mua {format_number(quote.foreign_buy_volume)} CP · bán {format_number(quote.foreign_sell_volume)} CP")
-                    st.caption(f"Giờ khớp nguồn: {time_label(quote.source_timestamp)}")
-                    st.caption(f"Nguồn: {snapshot.source} · nhận lúc {time_label(quote.received_at)}")
-            with depth:
-                with st.container(border=True):
-                    st.markdown('<div class="panel-title">Dư mua / dư bán · 3 mức giá</div>', unsafe_allow_html=True)
-                    st.markdown(depth_table(quote), unsafe_allow_html=True)
-                    st.caption(f"Giờ sổ lệnh nguồn: {time_label(quote.depth_timestamp)} · giá ×1.000 đ, KL cổ phiếu")
-    elif selected:
-        st.info(f"{selected}: nguồn chưa trả về dữ liệu hợp lệ. Bạn có thể kiểm tra mã hoặc thử làm mới.")
+        with st.container(key="market_analysis_controls"):
+            selection, timeframe, update = st.columns([1.6, 1, 1], vertical_alignment="bottom")
+            selected = selection.selectbox("Chi tiết mã", detail_symbols, key="board_selected")
+            resolution = timeframe.selectbox("Khung nến", ["1", "5", "15"], index=1, format_func=lambda value: f"{value} phút", key="market_candle_resolution")
+            chart_refresh = update.button("Cập nhật biểu đồ", key="market_chart_refresh", disabled=not settings.market_enabled, use_container_width=True)
+        render_workbench(settings, store, portfolio, snapshot, symbols, selected, resolution=resolution, auto=auto, refresh=chart_refresh or refresh)
     st.caption("Bảng tải snapshot theo nhịp đã chọn khi đang mở trang. Dữ liệu phụ thuộc nguồn; chưa phải luồng đẩy từng giao dịch.")
     st.markdown("[Mở bảng giá DNSE để đối chiếu](https://banggia.dnse.com.vn/v2)")
 
 
 def market_page(settings: Settings, store: Store, portfolio: Portfolio) -> None:
-    intro("THỊ TRƯỜNG", "Bảng giá & biểu đồ", "Theo dõi cung cầu, khớp lệnh và thông tin phiên trong một bảng.")
     view = st.radio("Nội dung thị trường", ["Bảng điện Việt Nam", "Biểu đồ VN / US"], key="market_view", horizontal=True, label_visibility="collapsed")
     if view == "Bảng điện Việt Nam":
         live_priceboard(settings, store, portfolio)

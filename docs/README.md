@@ -1,6 +1,6 @@
 # Tài liệu Breakout AI
 
-Bộ tài liệu cho bản 0.7.0. Chọn theo việc cần làm, không cần đọc tuần tự.
+Bộ tài liệu cho bản 0.8.0. Chọn theo việc cần làm, không cần đọc tuần tự.
 
 | Bạn cần | Tài liệu |
 | --- | --- |
@@ -9,6 +9,8 @@ Bộ tài liệu cho bản 0.7.0. Chọn theo việc cần làm, không cần đ
 | Nhập và tra cứu sách | [Thư viện sách](BOOKS.md) |
 | Ghi mua/bán, xem giá vốn | [Sổ giao dịch](TRADES.md) |
 | Theo dõi bảng điện Việt Nam | [Snapshot DNSE và nhịp cập nhật](REALTIME.md) |
+| Xem nến trong phiên và chỉ số | [Nến DNSE, đơn vị và cache](INTRADAY.md) |
+| Hiểu kịch bản mua/bán theo điều kiện | [Phân tích kỹ thuật](TECHNICAL_ANALYSIS.md) |
 | Hiểu nguồn giá ngày, biểu đồ VN/Mỹ | [Dữ liệu thị trường](MARKET_DATA.md) |
 | Tin tức và cache | [Tin tức](NEWS.md) |
 | Nguồn kiến thức nền | [Nguồn nội dung](DATA_SOURCES.md) |

@@ -1,5 +1,7 @@
 # Dữ liệu thị trường Breakout AI
 
+Tài liệu này mô tả **giá ngày VN/Mỹ** và luồng nghiên cứu giá ngày. Bảng điện DNSE dùng [snapshot giá/ba mức mua bán](REALTIME.md) riêng; biểu đồ nến trong phiên và bốn chỉ số dùng [nguồn OHLCV](INTRADAY.md). Quy tắc của panel phân tích/scanner tại [Phân tích kỹ thuật](TECHNICAL_ANALYSIS.md). Các nguồn có đơn vị, thời gian và nhịp tải riêng.
+
 ## Nguồn giá và đơn vị
 
 | Thị trường | Adapter mặc định | Dữ liệu đang lấy | Tiền tệ |
@@ -25,7 +27,7 @@ Gợi ý các mã đáng cân nhắc mua: VN:FPT, VN:VCB, VN:VNM.
 So sánh US:AAPL và US:MSFT theo tiêu chí xu hướng.
 ```
 
-Trong Breakout AI 0.6, mở **Tổng quan → Gợi ý hôm nay** để đọc bản tin từ sách; chỉnh danh mục và danh sách tìm mua trong **Danh mục & giao dịch**. Biểu đồ và bảng phiên nằm tại **Bảng giá & biểu đồ**. Bản tin chia batch tối đa 6 mã/lần mặc định, tối đa 3 request đồng thời; không quét toàn bộ sàn. Hỏi đáp có luồng xếp hạng kỹ thuật riêng khi được hỏi, với universe mặc định nhỏ nếu không nêu mã; điểm đó chưa phải nguyên tắc học từ sách.
+Trong Breakout AI 0.8, mở **Tổng quan → Gợi ý hôm nay** để đọc bản tin từ sách; chỉnh danh mục và danh sách tìm mua trong **Danh mục & giao dịch**. Biểu đồ và bảng phiên nằm tại **Bảng điện & biểu đồ → Biểu đồ VN / US**. Bản tin chia batch tối đa 6 mã/lần mặc định, tối đa 3 request đồng thời; không quét toàn bộ sàn. Hỏi đáp có luồng xếp hạng kỹ thuật riêng khi được hỏi, với universe mặc định nhỏ nếu không nêu mã; điểm đó chưa phải nguyên tắc học từ sách.
 
 `VN:MÃ` và `US:MÃ` xác định thị trường rõ. Mã không có prefix dùng thị trường đơn đang chọn; với BOTH chỉ suy ra các mã phổ biến đã biết, còn mã không rõ sẽ yêu cầu prefix. Prefix có thể chỉ rõ thị trường khác bộ lọc kiến thức.
 
@@ -35,7 +37,7 @@ Trong Breakout AI 0.6, mở **Tổng quan → Gợi ý hôm nay** để đọc b
 
 Mốc US được chọn sau giờ core session thông thường 09:30–16:00 ET theo [NYSE](https://www.nyse.com/markets/hours-calendars) và [Nasdaq](https://www.nasdaq.com/market-activity/stock-market-holiday-schedule), có khoảng đệm cho chênh lệch DST. Đây là quyết định triển khai của Breakout AI; nguồn feed và lịch phiên đặc biệt vẫn cần xác minh riêng.
 
-Chưa có quote realtime, bid/ask, order book, EPS/P/E/P/B/ROE hoặc BCTC được lấy từ feed giá này. App không suy ra chỉ số thiếu từ giá. Biểu đồ dùng chuỗi adjusted khi nguồn xác nhận và đầy đủ; nếu thiếu, toàn chuỗi dùng close gốc. Giá headline dùng close gốc và ghi rõ cơ sở chuỗi. Tin tức RSS có adapter riêng, chưa tham gia điều kiện mua/bán của sách. Nguồn chưa xác minh điều chỉnh quyền được ghi rõ giới hạn.
+Feed giá ngày trong mục này không cung cấp quote trong phiên, bid/ask, sổ giá ba mức, EPS/P/E/P/B/ROE hoặc BCTC. Bảng điện DNSE lấy snapshot và độ sâu từ adapter riêng; không suy ra các trường đó từ bar ngày. App không suy ra chỉ số thiếu từ giá. Biểu đồ dùng chuỗi adjusted khi nguồn xác nhận và đầy đủ; nếu thiếu, toàn chuỗi dùng close gốc. Giá headline dùng close gốc và ghi rõ cơ sở chuỗi. Tin tức RSS có adapter riêng, chưa tham gia điều kiện mua/bán của sách. Nguồn chưa xác minh điều chỉnh quyền được ghi rõ giới hạn.
 
 ## Cache và lỗi
 
@@ -47,9 +49,9 @@ Batch chuẩn hóa mã trước khi loại trùng (`aapl`, ` AAPL ` → `AAPL`),
 
 Đổi URL gateway nhưng giữ cùng provider có thể còn cache của gateway cũ trong TTL. Dùng nút cập nhật từ nguồn hoặc chờ hết TTL khi đổi cấu hình nguồn.
 
-## Tiêu chí xếp hạng trong chat, độc lập với bản tin sách
+## Tiêu chí xếp hạng từ giá ngày trong chat chính
 
-Đây là heuristic kỹ thuật kiểm tra được, không phải mô hình học từ dữ liệu lợi nhuận tương lai. Mỗi điều kiện đạt cộng 20 điểm:
+Đây là bộ xếp hạng giá ngày của chat chính, độc lập với bản tin sách và [panel phân tích trong phiên](TECHNICAL_ANALYSIS.md). Đây là heuristic kỹ thuật kiểm tra được, không phải mô hình học từ dữ liệu lợi nhuận tương lai. Mỗi điều kiện đạt cộng 20 điểm:
 
 1. Giá phân tích lớn hơn SMA20.
 2. Giá phân tích lớn hơn SMA60.
