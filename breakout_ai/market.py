@@ -6,6 +6,7 @@ No fallback creates data, changes a currency, or silently changes providers.
 
 from dataclasses import asdict, dataclass, replace
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from datetime import date, datetime, timedelta, timezone
 import json
 import re
@@ -126,7 +127,19 @@ class MarketService:
             return None
         return replace(snapshot, from_cache=True, cache_stale=snapshot.cache_stale or not 0 <= age < self.settings.market_cache_seconds)
 
+    def _client(self) -> httpx.Client:
+        # One bounded pool per batch, shared safely by its worker threads.
+        return httpx.Client(
+            timeout=self.settings.market_timeout, transport=self.transport,
+            follow_redirects=False,
+            headers={"User-Agent": "BreakoutAI/0.6 research application"},
+            limits=httpx.Limits(max_connections=3, max_keepalive_connections=3, keepalive_expiry=30),
+        )
+
     def get(self, market: str, symbol: str, force: bool = False) -> MarketSnapshot:
+        return self._get(market, symbol, force)
+
+    def _get(self, market: str, symbol: str, force: bool = False, client: httpx.Client | None = None) -> MarketSnapshot:
         if not self.settings.market_enabled:
             raise MarketError("Dữ liệu thị trường chưa kết nối: MARKET_DATA_ENABLED=false.")
         if market not in {"VN", "US"}:
@@ -142,13 +155,13 @@ class MarketService:
             if cached and not force and 0 <= age < self.settings.market_cache_seconds:
                 return replace(cached, from_cache=True)
         try:
-            with httpx.Client(timeout=self.settings.market_timeout, transport=self.transport, follow_redirects=False, headers={"User-Agent": "BreakoutAI/0.6 research application"}) as client:
+            with self._client() if client is None else nullcontext(client) as active_client:
                 if provider == "yahoo":
-                    snapshot = self._yahoo(client, symbol)
+                    snapshot = self._yahoo(active_client, symbol)
                 elif provider == "kbs":
-                    snapshot = self._kbs(client, symbol)
+                    snapshot = self._kbs(active_client, symbol)
                 elif provider == "gateway":
-                    snapshot = self._gateway(client, market, symbol)
+                    snapshot = self._gateway(active_client, market, symbol)
                 else:
                     raise MarketError("Nhà cung cấp dữ liệu không được hỗ trợ.")
             if self.store:
@@ -217,22 +230,26 @@ class MarketService:
         return MarketSnapshot(market, symbol, data["currency"], "gateway", source_url, utc_now(), _bars(data["bars"]), basis)
 
     def many(self, symbols: list[tuple[str, str]], force: bool = False) -> tuple[list[MarketSnapshot], list[str]]:
-        identities = list(dict.fromkeys(symbols))
+        # Normalize before deduplication/limits, matching get() identity semantics.
+        identities = list(dict.fromkeys((market, symbol.strip().upper()) for market, symbol in symbols))
         if len(identities) > self.settings.market_max_symbols:
             raise MarketError(f"Mỗi lần tối đa {self.settings.market_max_symbols} mã để giới hạn request.")
         def fetch(identity):
             market, symbol = identity
             try:
-                return self.get(market, symbol, force), None
+                return self._get(market, symbol, force, client), None
             except ValueError as exc:
                 return None, str(exc)
         snapshots, errors = [], []
         if not identities:
             return snapshots, errors
-        with ThreadPoolExecutor(max_workers=min(3, len(identities))) as workers:
-            for snapshot, error in workers.map(fetch, identities):
-                if snapshot is not None:
-                    snapshots.append(snapshot)
-                if error:
-                    errors.append(error)
+        # HTTPX Client supports thread sharing: workers reuse its TCP/TLS pool.
+        # Fresh cache entries still return before any HTTP request is made.
+        with self._client() as client:
+            with ThreadPoolExecutor(max_workers=min(3, len(identities))) as workers:
+                for snapshot, error in workers.map(fetch, identities):
+                    if snapshot is not None:
+                        snapshots.append(snapshot)
+                    if error:
+                        errors.append(error)
         return snapshots, errors

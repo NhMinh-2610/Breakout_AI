@@ -1,4 +1,10 @@
 # Nhật ký Breakout AI
+## 19/10/2026 — API tự tải và căn khoảng cách
+Theo yêu cầu, giao diện tự lấy giá khi thiếu/cũ và kiểm tra mỗi 5 phút khi mở; thêm cập nhật theo nhóm, cooldown lỗi và bảng mã giữ dòng chưa có giá. Batch HTTP dùng chung pool ba kết nối, chuẩn hóa/loại trùng mã trước giới hạn. Không đổi logic gợi ý mua/bán.
+
+Chuẩn hóa nhịp 8/16/24/32px, control44px, thẻ số liệu128px và nhãn36px. Responsive gắn key từng hàng để tránh co nhầm biểu đồ; chat giữ input cố định. API thật sáu mã VN/Mỹ thành công. 247 test đạt; chưa có QA ảnh vì Browser không khả dụng.
+
+
 ## 19/10/2026 — Bản 0.6, đổi tên và hoàn thiện nhận diện
 Theo yêu cầu chủ dự án, dùng tên Breakout AI và thư mục Breakout_AI đã được đổi trước đó. Đã sao lưu nguồn/SQLite, đổi package thành breakout_ai, cập nhật import/CLI, prompt nhận diện, export và metadata. DB cũ tiếp tục được chọn để giữ lịch sử.
 

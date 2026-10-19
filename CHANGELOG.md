@@ -1,5 +1,13 @@
 # Changelog — Breakout AI
 
+## Chưa phát hành — 2026-10-19
+- Tự tải giá khi thiếu/cũ, kiểm tra mỗi 5 phút và nút cập nhật theo nhóm trên Tổng quan.
+- Bảng theo dõi giữ dòng thiếu dữ liệu, hiện riêng giá cũ và nguồn/tiền tệ/phiên.
+- Batch dùng chung HTTP pool tối đa ba kết nối; loại trùng sau chuẩn hóa mã.
+- Cooldown sau lỗi tránh gọi API lặp mỗi lần tương tác; cập nhật thủ công thử ngay.
+- Chuẩn hóa khoảng cách 8/16/24/32px, thẻ số liệu, control 44px và responsive theo container.
+
+
 ## 0.6.0 — 2026-10-19
 - Nhận diện Breakout AI trên tiêu đề, sidebar, chat, logo/favicon, tệp xuất và prompt.
 - Package breakout_ai, metadata breakout-ai và CLI mới; giữ lựa chọn DB cũ, schema v4 và dữ liệu hiện có.

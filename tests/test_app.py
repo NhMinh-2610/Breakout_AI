@@ -2,6 +2,7 @@ from streamlit.testing.v1 import AppTest
 
 from breakout_ai.config import ROOT
 from breakout_ai.news import NewsResult, NewsService
+from breakout_ai.market import MarketService
 
 
 def app(monkeypatch, tmp_path):
@@ -9,6 +10,8 @@ def app(monkeypatch, tmp_path):
     monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "ui.sqlite3"))
     monkeypatch.setenv("WORKSPACE_ID", "test-ui")
     monkeypatch.setattr(NewsService, "fetch", lambda self, market="BOTH", force=False: NewsResult([], [], None))
+    if MarketService.many.__module__ == "breakout_ai.market":
+        monkeypatch.setattr(MarketService, "many", lambda self, symbols, force=False: ([], ["Nguồn giá giả lập đang ngoại tuyến."]))
     return AppTest.from_file(str(ROOT / "app.py"), default_timeout=20).run()
 
 

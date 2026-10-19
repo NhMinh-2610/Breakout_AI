@@ -10,6 +10,7 @@
 | portfolio | Vị thế, journal, phí, giá vốn, export |
 | market, screening, research | Giá, cache, phép tính, bối cảnh nghiên cứu |
 | providers, tutor | API model và điều phối hỏi đáp |
+| market_view | Chính sách cache/cooldown UI, tách khỏi gọi nguồn |
 | news, dashboard | RSS và biểu diễn dữ liệu |
 | schedule, verify_data | Lịch Windows và kiểm tra nguồn |
 
@@ -21,6 +22,8 @@
 **Giao dịch:** kiểm tra → `BEGIN IMMEDIATE` → cập nhật số dư/giá vốn và thêm journal → commit; lỗi rollback cả hai. Idempotency gắn workspace và khóa gửi.
 
 **Tin tức:** RSS allowlist → kiểm tra XML/URL/ngày → cache → tiêu đề có nguồn. Không đi vào điều kiện mua/bán.
+
+UI giá dùng fragment 300 giây. market_view giữ thời điểm thử theo workspace/provider/danh sách, yêu cầu mã thiếu/cũ và giới hạn batch theo cấu hình. Lần tải lỗi không tự lặp trên mỗi rerun; stale từ service được giữ nguyên.
 
 ## Lưu trữ
 Schema **v4** giữ nguyên trong bản 0.6. Dịch vụ tạo/migrate bảng theo nhu cầu; dữ liệu có scope workspace. Hội thoại mở lại bằng ID, không tạo bản sao.

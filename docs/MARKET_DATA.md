@@ -39,9 +39,11 @@ Chưa có quote realtime, bid/ask, order book, EPS/P/E/P/B/ROE hoặc BCTC đư�
 
 ## Cache và lỗi
 
-Cache SQLite theo workspace + provider + market + symbol, TTL mặc định 300 giây. Chat có thể tái sử dụng cache còn hạn. Mỗi lần tạo lại bản tin yêu cầu tải từ nguồn; mở lại bản tin cùng ngày/cùng đầu vào dùng báo cáo đã lưu, nút cập nhật yêu cầu tải lại.
+Cache SQLite theo workspace + provider + market + symbol, TTL mặc định 300 giây. Chat và bảng giá tái sử dụng cache còn hạn; trong một batch, chỉ mã chưa có dữ liệu hoặc cache hết hạn cần gọi mạng. Nút làm mới chủ động có thể bỏ qua TTL. Mỗi lần tạo lại bản tin yêu cầu tải từ nguồn; mở lại bản tin cùng ngày/cùng đầu vào dùng báo cáo đã lưu, nút cập nhật yêu cầu tải lại.
 
 Nếu cập nhật thất bại nhưng có cache, kết quả mang `cache_stale=true` và hiển thị bản lưu cũ. Kết quả đó **không được xếp hạng**. Nếu không có cache, trả lỗi thay vì tạo giá. Thay provider không tự chuyển sang provider khác khi lỗi.
+
+Batch chuẩn hóa mã trước khi loại trùng (`aapl`, ` AAPL ` → `AAPL`), áp giới hạn tối đa 6 mã và tải tối đa 3 mã đồng thời. Cả batch dùng chung một HTTPX client với pool tối đa 3 kết nối để tái sử dụng TCP/TLS theo [cơ chế connection pooling của HTTPX](https://www.python-httpx.org/advanced/clients/); client được đóng sau khi hoàn tất. Không có vòng lặp retry tự động khi nhà cung cấp giới hạn truy cập hoặc trả lỗi. Kết quả giữ thứ tự mã đầu vào và giữ cả các mã thành công nếu một mã khác lỗi.
 
 Đổi URL gateway nhưng giữ cùng provider có thể còn cache của gateway cũ trong TTL. Dùng nút cập nhật từ nguồn hoặc chờ hết TTL khi đổi cấu hình nguồn.
 
@@ -102,6 +104,8 @@ Lệnh này chủ động gọi mạng, lưu cache và ghi báo cáo provenance 
 
 ## Đọc thông tin trên giao diện
 
-Dải giá Tổng quan chỉ dùng cache đã có, ghi phiên và trạng thái cần làm mới. Không có giá thì hiển thị dấu gạch; không dựng chỉ số thị trường hoặc bảng lệnh giả. Chọn mã và bấm cập nhật để lấy nguồn mới. Đường giá màu xanh dương và MA20 màu vàng dùng chung nền tối; biến động giá chưa phải hiệu suất danh mục.
+Dải giá Tổng quan tự tải mã chưa có giá hoặc cache hết hạn, kiểm tra lại mỗi 5 phút khi trang mở. Nút Cập nhật giá theo dõi lấy lại nhóm mã và làm mới biểu đồ. Request cùng batch dùng chung pool tối đa ba kết nối. Lỗi tải có cooldown theo TTL (tối thiểu 30 giây), cập nhật thủ công vẫn được thử ngay. Giá cũ giữ nhãn riêng; không có giá thì hiện dấu gạch. Không dựng chỉ số thị trường hoặc bảng lệnh giả. Đường giá màu xanh dương và MA20 màu vàng dùng chung nền tối; biến động giá chưa phải hiệu suất danh mục.
 
 [Bản đồ tài liệu](README.md) · [Bản tin](DAILY_GUIDE.md) · [UI/UX](UI_UX.md).
+
+Kiểm tra API thật ngày 19/10/2026: FPT, VCB, VNM qua KBS; AAPL, MSFT, GOOGL qua Yahoo. Cả sáu thành công, không lỗi hoặc cache stale. Phiên VN trả về 19/10 có thể chưa đóng; US gần nhất 16/10. Báo cáo local tại .artifacts/market-api-ui-check.json, không đưa vào Git. Đây là trạng thái lần kiểm tra, không chứng minh feed có SLA/realtime hoặc quyền redisplay thương mại.

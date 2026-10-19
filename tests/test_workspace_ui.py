@@ -191,3 +191,47 @@ def test_news_title_source_and_search_without_external_requests(monkeypatch, tmp
     at.text_input(key="news_search").set_value("")
     at.selectbox(key="news_market").set_value("US").run()
     assert calls[-1] == ("US", False) and any("Chưa có tin phù hợp" in item.value for item in at.info)
+
+
+def test_overview_auto_load_and_manual_batch_refresh_update_chart(monkeypatch, tmp_path):
+    saved, calls = {}, []
+    day = (datetime.now(timezone.utc).date() - timedelta(days=1)).isoformat()
+    def many(self, pairs, force=False):
+        calls.append((list(pairs), force))
+        for market, symbol in pairs:
+            saved[(market, symbol)] = MarketSnapshot(market, symbol, "VND" if market == "VN" else "USD",
+                "test-feed", "https://example.org/prices", utc_now(),
+                [Bar(day, 100 if not force else 120, 1000)])
+        return [saved[pair] for pair in pairs], []
+    monkeypatch.setattr(MarketService, "many", many)
+    monkeypatch.setattr(MarketService, "cached", lambda self, market, symbol: saved.get((market, symbol)))
+    at = app(monkeypatch, tmp_path)
+    assert not at.exception and len(calls) == 1 and len(calls[0][0]) == 6
+    assert any("6/6 mã đã cập nhật" in item.value for item in at.caption)
+    button(at, "Cập nhật giá theo dõi").click().run()
+    assert not at.exception and len(calls) == 2 and calls[-1][1] is True
+    assert any(item.label == "FPT · VND" and item.value == "120.00" for item in at.metric)
+    at.run()
+    assert len(calls) == 2
+
+
+def test_overview_failed_batch_refresh_preserves_stale_labels(monkeypatch, tmp_path):
+    day = (datetime.now(timezone.utc).date() - timedelta(days=1)).isoformat()
+    saved, calls = {}, []
+    for market, symbol in (("VN", "FPT"), ("VN", "VCB"), ("VN", "VNM"), ("US", "AAPL"), ("US", "MSFT"), ("US", "GOOGL")):
+        saved[(market, symbol)] = MarketSnapshot(market, symbol, "VND" if market == "VN" else "USD",
+            "test-feed", "https://example.org/prices", utc_now(), [Bar(day, 100, 1000)])
+    def many(self, pairs, force=False):
+        calls.append(force)
+        for pair in pairs:
+            saved[pair] = replace(saved[pair], cache_stale=True)
+        return [saved[pair] for pair in pairs], []
+    monkeypatch.setattr(MarketService, "many", many)
+    monkeypatch.setattr(MarketService, "cached", lambda self, market, symbol: saved.get((market, symbol)))
+    at = app(monkeypatch, tmp_path)
+    assert not at.exception and not calls
+    button(at, "Cập nhật giá theo dõi").click().run()
+    assert not at.exception and calls == [True]
+    assert any("chưa cập nhật được" in item.value for item in at.warning)
+    assert any("0/6 mã đã cập nhật" in item.value for item in at.caption)
+    assert any("Đang xem bản lưu" in item.value for item in at.caption)

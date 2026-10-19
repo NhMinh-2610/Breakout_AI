@@ -28,12 +28,17 @@ Không có sách thương mại hoặc vị thế giả nạp sẵn. [Tài liệ
 ## Các màn hình
 | Mục | Công việc |
 | --- | --- |
-| Tổng quan | Gợi ý hôm nay, giá đã lưu, bản tin cũ và thao tác nhanh |
+| Tổng quan | Gợi ý hôm nay, giá tự tải, cập nhật theo nhóm và bản tin cũ |
 | Bảng giá & biểu đồ | Tra giá theo phiên, MA20, bảng dữ liệu và nguồn |
 | Danh mục & giao dịch | Xem vị thế, ghi mua/bán, lọc lịch sử và xuất CSV |
 | Tin tức | Tìm tiêu đề VN/Mỹ, xem nguồn/thời gian và mở báo gốc |
 | Chat AI | Hỏi đáp, tìm/mở lại/đổi tên/xuất/xóa hội thoại |
 | Thư viện sách | Nhập sách, tìm đoạn, chọn và kiểm tra nguyên tắc |
+
+## Giá chứng khoán và giao diện
+Mở Tổng quan để tải giá từ KBS (VN) và Yahoo (US). Ứng dụng ưu tiên cache, tự kiểm tra mỗi 5 phút khi trang mở; nút **Cập nhật giá theo dõi** lấy lại cả nhóm mã. Khi nguồn lỗi, có thời gian chờ trước khi tự thử lại, vẫn cho cập nhật thủ công. Giá cũ/thiếu có trạng thái riêng.
+
+Bảng giá có dòng cho từng mã, gồm giá, tiền tệ, phần trăm, phiên và nguồn. Các ô số liệu đều chiều cao; form/nút căn hàng, khoảng cách 8/16/24/32px và bố cục riêng cho màn nhỏ. Dữ liệu theo phiên, chưa phải báo giá tick realtime.
 
 ## Bản tin 07:30
 ```powershell

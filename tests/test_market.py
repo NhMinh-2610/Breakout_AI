@@ -132,3 +132,56 @@ def test_http_errors_never_include_provider_response_body(settings):
     with pytest.raises(MarketError) as error:
         service.get("US", "AAPL")
     assert "SECRET-DETAIL" not in str(error.value)
+
+
+def test_batch_normalizes_duplicates_before_limit_and_network(settings):
+    requests = []
+    def handler(request):
+        requests.append(request)
+        return httpx.Response(200, json=yahoo_payload())
+    service = MarketService(
+        replace(settings, market_enabled=True, market_max_symbols=1),
+        transport=httpx.MockTransport(handler),
+    )
+    snapshots, errors = service.many([("US", "aapl"), ("US", " AAPL "), ("US", "AAPL")])
+    assert errors == []
+    assert [snapshot.symbol for snapshot in snapshots] == ["AAPL"]
+    assert len(requests) == 1
+
+
+def test_batch_shares_and_closes_one_transport_after_requests(settings):
+    class TrackingTransport(httpx.MockTransport):
+        closes = 0
+        def close(self):
+            self.closes += 1
+            super().close()
+    requests = []
+    def handler(request):
+        requests.append(request)
+        assert transport.closes == 0
+        return httpx.Response(200, json=yahoo_payload(request.url.path.rsplit("/", 1)[-1]))
+    transport = TrackingTransport(handler)
+    service = MarketService(replace(settings, market_enabled=True), transport=transport)
+    snapshots, errors = service.many([("US", "AAPL"), ("US", "MSFT"), ("US", "NVDA")])
+    assert errors == [] and len(requests) == 3
+    assert [snapshot.symbol for snapshot in snapshots] == ["AAPL", "MSFT", "NVDA"]
+    assert transport.closes == 1
+
+
+def test_batch_only_requests_missing_data_and_retains_fresh_cached_item(settings, store):
+    requests = []
+    def handler(request):
+        symbol = request.url.path.rsplit("/", 1)[-1]
+        requests.append(symbol)
+        if symbol == "MISSING":
+            return httpx.Response(404)
+        return httpx.Response(200, json=yahoo_payload(symbol))
+    service = MarketService(replace(settings, market_enabled=True), store, httpx.MockTransport(handler))
+    service.get("US", "AAPL")
+    requests.clear()
+    snapshots, errors = service.many([("US", "AAPL"), ("US", "MSFT"), ("US", "MISSING")])
+    assert sorted(requests) == ["MISSING", "MSFT"]
+    assert [snapshot.symbol for snapshot in snapshots] == ["AAPL", "MSFT"]
+    assert snapshots[0].from_cache and not snapshots[0].cache_stale
+    assert not snapshots[1].from_cache
+    assert len(errors) == 1 and "MISSING" in errors[0]

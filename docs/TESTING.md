@@ -1,8 +1,16 @@
 # Kiểm thử Breakout AI 0.6
 ## Kết quả ngày 19/10/2026
-**238 tests passed, 1 warning**, 54,71 giây. Môi trường Python 3.13.5, Streamlit 1.45.1, Altair 5.5.0, pytest 8.3.4. Warning là API theme nội bộ Streamlit gọi Altair đã deprecated, không làm lỗi kiểm thử.
+**247 tests passed, 1 warning**, 51,86 giây. Môi trường Python 3.13.5, Streamlit 1.45.1, Altair 5.5.0, pytest 8.3.4. Warning là API theme nội bộ Streamlit gọi Altair đã deprecated, không làm lỗi kiểm thử.
 
 Bằng chứng JUnit: `.artifacts/rebrand-tests.xml`. Đây là kết quả local, chưa phải GitHub Actions đã chạy.
+
+## Cập nhật API và khoảng cách giao diện
+- Thêm 3 case về batch HTTP dùng chung client và chuẩn hóa mã trước giới hạn.
+- Thêm 4 case market_view về cache, tự tải, cooldown, tắt nguồn, scope và giữ stale.
+- Thêm 2 case UI về cập nhật cả nhóm/biểu đồ và lỗi nguồn vẫn giữ nhãn cũ.
+- API thật FPT/VCB/VNM/AAPL/MSFT/GOOGL thành công, không lỗi hoặc stale; bằng chứng local .artifacts/market-api-ui-check.json.
+- CSS đã chuẩn hóa control/thẻ/khoảng cách và dùng key riêng cho hàng metric; parser không thay thế QA ảnh.
+- Browser vẫn không khả dụng; chưa xác minh pixel/mobile.
 
 ## Phạm vi
 | Nhóm | Hành vi |
