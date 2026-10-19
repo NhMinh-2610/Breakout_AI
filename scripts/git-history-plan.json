@@ -1,0 +1,145 @@
+{
+  "kind": "reconstructed-history",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "description": "Các mốc được chọn lại để tổ chức snapshot hiện tại; không xác minh thời gian làm việc thực tế.",
+  "commits": [
+    {
+      "date": "2026-10-09T19:30:00+07:00",
+      "subject": "chore(core): establish project foundation",
+      "body": "Thiết lập cấu hình, dữ liệu local và kiểm thử nền.",
+      "paths": [
+        ".gitignore",
+        ".env.example",
+        "pyproject.toml",
+        "requirements.txt",
+        "requirements-dev.txt",
+        "README.md",
+        "breakout_ai/__init__.py",
+        "breakout_ai/config.py",
+        "breakout_ai/finance.py",
+        "breakout_ai/storage.py",
+        "tests/conftest.py",
+        "tests/test_config.py",
+        "tests/test_finance.py",
+        "tests/test_storage.py",
+        "examples/financial_snapshot.csv",
+        "scripts/setup.ps1",
+        "scripts/check.ps1",
+        "data/.gitkeep"
+      ]
+    },
+    {
+      "date": "2026-10-10T20:15:00+07:00",
+      "subject": "feat(knowledge): add knowledge and LLM providers",
+      "body": "Bổ sung kiến thức tài chính và kết nối mô hình.",
+      "paths": [
+        "breakout_ai/knowledge.py",
+        "breakout_ai/providers.py",
+        "content/knowledge.json",
+        "tests/test_knowledge.py",
+        "tests/test_providers.py"
+      ]
+    },
+    {
+      "date": "2026-10-11T16:40:00+07:00",
+      "subject": "feat(books): index books and extract trading rules",
+      "body": "Đọc sách, tìm trích đoạn và nhận diện điều kiện đầu tư.",
+      "paths": [
+        "breakout_ai/books.py",
+        "breakout_ai/book_rules.py",
+        "tests/test_books.py",
+        "examples/book_excerpt.md",
+        "examples/daily_rules.md"
+      ]
+    },
+    {
+      "date": "2026-10-12T21:05:00+07:00",
+      "subject": "feat(market): integrate Vietnam and US price data",
+      "body": "Lấy giá theo phiên, lưu cache và giữ nguồn dữ liệu.",
+      "paths": [
+        "breakout_ai/market.py",
+        "tests/test_market.py"
+      ]
+    },
+    {
+      "date": "2026-10-13T19:50:00+07:00",
+      "subject": "feat(screening): rank stock research candidates",
+      "body": "Thêm tiêu chí sàng lọc và kiểm tra nguồn giá.",
+      "paths": [
+        "breakout_ai/screening.py",
+        "breakout_ai/verify_data.py",
+        "tests/test_screening.py"
+      ]
+    },
+    {
+      "date": "2026-10-14T20:35:00+07:00",
+      "subject": "feat(chat): add research answers with citations",
+      "body": "Kết hợp kiến thức, sách và giá trong câu trả lời có nguồn.",
+      "paths": [
+        "breakout_ai/research.py",
+        "breakout_ai/tutor.py",
+        "tests/test_research.py",
+        "tests/test_tutor.py"
+      ]
+    },
+    {
+      "date": "2026-10-15T21:20:00+07:00",
+      "subject": "feat(portfolio): track holdings and trade history",
+      "body": "Ghi mua bán, cập nhật giá vốn và tính lãi lỗ đã chốt.",
+      "paths": [
+        "breakout_ai/portfolio.py",
+        "tests/test_trades.py"
+      ]
+    },
+    {
+      "date": "2026-10-16T19:45:00+07:00",
+      "subject": "feat(daily): schedule morning stock reviews",
+      "body": "Tạo bản tin từ sách và cài lịch 07:30.",
+      "paths": [
+        "breakout_ai/daily.py",
+        "breakout_ai/schedule.py",
+        "tests/test_daily.py",
+        "scripts/daily-schedule.ps1"
+      ]
+    },
+    {
+      "date": "2026-10-17T17:10:00+07:00",
+      "subject": "feat(insights): add news feeds and price charts",
+      "body": "Hiển thị tin có nguồn, biểu đồ giá và phân bổ vốn.",
+      "paths": [
+        "breakout_ai/news.py",
+        "breakout_ai/dashboard.py",
+        "tests/test_news.py",
+        "tests/test_dashboard.py"
+      ]
+    },
+    {
+      "date": "2026-10-18T21:15:00+07:00",
+      "subject": "feat(ui): build Breakout AI trading workspace",
+      "body": "Hoàn thiện giao diện tối, danh mục và lịch sử chat.",
+      "paths": [
+        "app.py",
+        "breakout_ai/brand.py",
+        "assets",
+        ".streamlit/config.toml",
+        "scripts/run.ps1",
+        "tests/test_app.py",
+        "tests/test_workspace_ui.py"
+      ]
+    },
+    {
+      "date": "2026-10-19T08:00:00+07:00",
+      "subject": "docs: document Breakout AI setup and delivery",
+      "body": "Bổ sung hướng dẫn sử dụng, vận hành và đưa mã lên Git.",
+      "paths": [
+        "docs",
+        "notes",
+        "CHANGELOG.md",
+        "NOTICE.md",
+        ".github",
+        "scripts/prepare-git-history.ps1",
+        "scripts/git-history-plan.json"
+      ]
+    }
+  ]
+}

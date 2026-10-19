@@ -1,0 +1,18 @@
+# Nhật ký Breakout AI
+## 19/10/2026 — Bản 0.6, đổi tên và hoàn thiện nhận diện
+Theo yêu cầu chủ dự án, dùng tên Breakout AI và thư mục Breakout_AI đã được đổi trước đó. Đã sao lưu nguồn/SQLite, đổi package thành breakout_ai, cập nhật import/CLI, prompt nhận diện, export và metadata. DB cũ tiếp tục được chọn để giữ lịch sử.
+
+Thêm logo SVG/favicon, căn sidebar 256px, nội dung dữ liệu tối đa 1360px, trang đọc 1080px và chat/composer cùng 820px. Căn nhãn thẻ số liệu, dải giá theo màn hình và bộ lọc tin tức. Viết lại tài liệu sử dụng/kỹ thuật, thêm bản đồ tài liệu, thương hiệu và hướng dẫn chuyển đổi.
+
+Task cũ trỏ root trước đổi tên được xuất XML. Task BreakoutAI mới được kiểm tra marker/action/root/giờ trước khi gỡ task cũ. Chạy thử thành công với last_result=0 và giữ 07:30 Việt Nam.
+
+238 tests passed, 1 cảnh báo dependency. Kiểm tra HTTP, CSS, link và số bản ghi trước/sau. Test temp/cache cũ gặp hạn chế quyền nên dùng thư mục thử mới, không sửa ACL hoặc xóa dữ liệu cũ. Browser không khả dụng; chưa có QA hình ảnh/mobile. Chi tiết và artifact ở TESTING.md.
+
+## Các mốc trước đổi tên
+- **0.5 — 18/10/2026:** nền tối kiểu bảng điện, chat tập trung, điều hướng giao dịch riêng, sửa đổi tên chat và câu hỏi mẫu gửi lặp. 235 test đạt.
+- **0.4 — 18/10/2026:** dashboard sáu trang, journal mua/bán, biểu đồ, RSS, lịch sử chat/bản tin. Schema v4, 233 test đạt.
+- **0.3 — 18/10/2026:** bản tin theo sách, danh mục sở hữu, nguyên tắc có nguồn và lịch 07:30.
+- **0.2:** giá ngày KBS/Yahoo, RAG sách và nghiên cứu có điều kiện.
+- **Khởi đầu:** từ trợ lý học tập chuyển sang ngách chứng khoán VN/US theo lựa chọn của chủ dự án.
+
+Chưa có doanh thu, người dùng pilot hoặc hiệu quả chiến lược được xác minh. [Backlog](BACKLOG.md) · [Kiểm thử](../docs/TESTING.md).
