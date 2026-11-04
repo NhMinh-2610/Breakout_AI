@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "breakout-ai"
-version = "0.8.0"
-description = "Vietnamese stock learning and research assistant for Vietnam and US markets"
+version = "0.9.0"
+description = "Chart observation and evidence-based opportunity research for Vietnamese investors"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["streamlit==1.45.1", "altair==5.5.0", "httpx==0.28.1", "python-dotenv==1.1.0", "pypdf==6.21.1"]

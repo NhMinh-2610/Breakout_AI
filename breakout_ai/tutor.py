@@ -33,6 +33,8 @@ class Reply:
     market_data: list[dict] = field(default_factory=list)
     screening: list[dict] = field(default_factory=list)
     data_errors: list[str] = field(default_factory=list)
+    chart_context: dict = field(default_factory=dict)
+    interpretation: dict = field(default_factory=dict)
 
 
 def requires_live_data(question: str) -> bool:

@@ -1,28 +1,26 @@
 # Tài liệu Breakout AI
 
-Bộ tài liệu cho bản 0.8.0. Chọn theo việc cần làm, không cần đọc tuần tự.
+Bản **0.9.0** ưu tiên AI quan sát dữ liệu biểu đồ và nhận định cơ hội có điều kiện.
 
 | Bạn cần | Tài liệu |
 | --- | --- |
-| Cài đặt và chạy | [Bắt đầu](GETTING_STARTED.md) |
-| Dùng bản tin 07:30 | [Hướng dẫn hằng ngày](DAILY_GUIDE.md) |
+| Chạy ứng dụng | [Bắt đầu](GETTING_STARTED.md) |
+| Hiểu luồng chính và phạm vi | [Sản phẩm](PRODUCT.md) |
+| Hiểu AI đọc gì và cách kiểm tra nhận định | [Hợp đồng observer](CHART_OBSERVER.md) |
+| Hiểu chỉ báo và điều kiện mua/bán | [Phân tích kỹ thuật](TECHNICAL_ANALYSIS.md) |
+| Nguồn nến/chỉ số và đơn vị | [Nến DNSE](INTRADAY.md) |
+| Theo dõi bảng điện phụ | [Snapshot DNSE](REALTIME.md) |
+| Biểu đồ ngày VN/Mỹ | [Dữ liệu thị trường](MARKET_DATA.md) |
 | Nhập và tra cứu sách | [Thư viện sách](BOOKS.md) |
-| Ghi mua/bán, xem giá vốn | [Sổ giao dịch](TRADES.md) |
-| Theo dõi bảng điện Việt Nam | [Snapshot DNSE và nhịp cập nhật](REALTIME.md) |
-| Xem nến trong phiên và chỉ số | [Nến DNSE, đơn vị và cache](INTRADAY.md) |
-| Hiểu kịch bản mua/bán theo điều kiện | [Phân tích kỹ thuật](TECHNICAL_ANALYSIS.md) |
-| Hiểu nguồn giá ngày, biểu đồ VN/Mỹ | [Dữ liệu thị trường](MARKET_DATA.md) |
-| Tin tức và cache | [Tin tức](NEWS.md) |
-| Nguồn kiến thức nền | [Nguồn nội dung](DATA_SOURCES.md) |
-| Phạm vi và nghiệm thu | [Sản phẩm](PRODUCT.md) |
-| Nhận diện và cách viết tên | [Thương hiệu](BRAND.md) |
-| Bố cục và quy ước UI | [UI/UX](UI_UX.md) |
-| Cấu trúc mã, dữ liệu | [Kiến trúc](ARCHITECTURE.md) |
-| Sửa và mở rộng mã | [Phát triển](DEVELOPMENT.md) |
-| Kiểm tra trước phát hành | [Kiểm thử](TESTING.md) |
-| Sao lưu và sự cố | [Vận hành](OPERATIONS.md) |
-| Nâng cấp tên dự án | [Chuyển đổi](MIGRATION.md) |
-| Chia commit và push GitHub | [Git workflow](GIT_WORKFLOW.md) |
-| Chuẩn bị bán thử | [Kế hoạch thương mại](COMMERCIAL_PLAN.md) |
+| Ghi vị thế/giao dịch | [Sổ giao dịch](TRADES.md) |
+| Bản tin theo sách 07:30 | [Hướng dẫn hằng ngày](DAILY_GUIDE.md) |
+| Tin tức và nguồn kiến thức nền | [Tin tức](NEWS.md) · [Nguồn nội dung](DATA_SOURCES.md) |
+| Cấu trúc mã | [Kiến trúc](ARCHITECTURE.md) |
+| Giao diện và kiểm tra hình ảnh | [UI/UX](UI_UX.md) |
+| Kết quả rà soát và làm sạch mã | [Code review](CODE_REVIEW.md) |
+| Sửa mã và xác minh | [Phát triển](DEVELOPMENT.md) · [Kiểm thử](TESTING.md) |
+| Sao lưu/nâng cấp | [Vận hành](OPERATIONS.md) · [Chuyển đổi](MIGRATION.md) |
+| Tên và Git | [Thương hiệu](BRAND.md) · [Git workflow](GIT_WORKFLOW.md) |
+| Điều kiện thương mại về sau | [Kế hoạch thương mại](COMMERCIAL_PLAN.md) |
 
 [Backlog](../notes/BACKLOG.md) · [Quyết định](../notes/DECISIONS.md) · [Nhật ký](../notes/DEVLOG.md) · [Changelog](../CHANGELOG.md).

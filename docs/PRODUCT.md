@@ -1,32 +1,49 @@
-# Breakout AI — Đặc tả sản phẩm 0.6
-## Người dùng và công việc
-Người Việt theo dõi cổ phiếu VN/US, cần hiểu căn cứ trước khi quyết định và lưu lịch sử nghiên cứu. Mỗi sáng, họ muốn biết mã đang giữ nào cần chú ý, mã nào đạt điều kiện nghiên cứu thêm và giải thích trong sách.
+# Breakout AI — Phạm vi sản phẩm 0.9
 
-Luồng chính: **Sách → nguyên tắc đã đối chiếu → giá và danh mục → bản tin → nghiên cứu thêm.**
+## Công việc chính
 
-Thư viện nhận PDF/TXT/MD. Người dùng chọn một sách, kiểm tra câu trích và xác nhận nguyên tắc. Danh mục là vị thế thực do họ nhập, độc lập với danh sách tìm mua. Chat và tin tức hỗ trợ nghiên cứu.
+Người theo dõi cổ phiếu muốn nhìn một biểu đồ, biết dữ liệu đang mô tả điều gì và xem có cơ hội đáng nghiên cứu hay điều kiện rủi ro cần chú ý. Breakout AI hỗ trợ công việc đó bằng bằng chứng có nguồn và các điều kiện kiểm tra được.
 
-| Trạng thái | Điều kiện |
+Luồng chính: **Chọn mã → đọc dữ liệu biểu đồ → đối chiếu bằng chứng → nhận định có điều kiện → hỏi phản biện.** Màn hình đầu tiên là **Phân tích AI → Phân tích biểu đồ**, tập trung một mã cổ phiếu Việt Nam.
+
+## Đầu vào và đầu ra
+
+Đầu vào gồm quote, nến OHLCV, khung thời gian, giờ nguồn và thông tin mã có đang được sở hữu. Observer tạo báo cáo kỹ thuật, mô tả cấu trúc giá, thân/bóng nến, vùng giá, khối lượng và các kịch bản có ID.
+
+Đầu ra trả lời ba việc: đang quan sát điều gì; cần điều kiện nào để xem đó là cơ hội; điều gì làm luận điểm mất hiệu lực hoặc buộc chờ. “Theo dõi mua” và “rà soát bán” là tín hiệu quan sát, chưa phải lệnh giao dịch.
+
+| Trạng thái | Quy ước |
 | --- | --- |
-| Cân nhắc mua | Mã chưa sở hữu đạt tất cả điều kiện mua hỗ trợ và đủ dữ liệu |
-| Cân nhắc bán | Mã đang sở hữu chạm ít nhất một điều kiện bán kiểm tra được |
-| Giữ và theo dõi | Kiểm tra đủ điều kiện bán và chưa chạm ngưỡng |
-| Cần xem thêm | Thiếu dữ liệu/nguyên tắc hoặc chưa đạt điều kiện mua |
+| Theo dõi mua | Mẫu hình có đủ xác nhận và dữ liệu đủ mới |
+| Rà soát bán | Điều kiện rủi ro xảy ra ở mã đang sở hữu |
+| Tiếp tục quan sát | Mã sở hữu chưa có điều kiện mới đủ xác nhận |
+| Chờ | Dữ liệu chưa sẵn sàng hoặc mẫu hình chưa đủ điều kiện |
 
-Chưa có sách/nguyên tắc hỗ trợ hoặc chưa đối chiếu thì hướng dẫn bước tiếp theo. Không tự đặt ngưỡng để tạo gợi ý.
+## Vai trò của AI
 
-## Tổ chức sản phẩm
-Tổng quan ưu tiên bản tin. Bảng giá & biểu đồ có nguồn theo phiên. Danh mục & giao dịch tách vị thế, ghi giao dịch và lịch sử. Tin tức có tiêu đề/nguồn/thời gian. Chat AI có lịch sử sidebar và ô nhập cố định. Thư viện sách quản lý dữ liệu và nguyên tắc.
+Ứng dụng đọc dữ liệu số tạo nên biểu đồ, chưa đọc ảnh chụp. Bộ tính kiểm tra chỉ báo và điều kiện; model nhận tối đa 60 nến đã đóng cùng các bằng chứng/kịch bản. Model chọn các ID phù hợp với câu hỏi; bộ kiểm tra giữ nguyên action và chỉ dựng văn bản từ dữ liệu được cấp.
+
+Demo hiển thị rõ là quy tắc, không giả là model đã được kết nối. Các lượt dùng model thật cần được đánh giá riêng; test mock không chứng minh chất lượng mô hình thực tế. [Hợp đồng observer](CHART_OBSERVER.md).
+
+## Công cụ phụ
+
+Bảng điện, danh mục/sổ giao dịch, sách, lịch sử hỏi đáp, bản tin theo sách và tin tức được giữ nguyên dữ liệu. Chúng hỗ trợ luồng nghiên cứu, không quyết định thứ tự màn hình chính.
+
+Sách dùng để truy xuất/đối chiếu kiến thức. Bản tin 07:30 có quy tắc riêng đã được người dùng kiểm tra; không trộn với nhận định nến trong phiên.
 
 ## Tiêu chí nghiệm thu
-- Tên, logo, tiêu đề, tệp xuất và tài liệu thống nhất Breakout AI.
-- Lối tắt mở đúng công việc; thao tác lưu cập nhật số liệu ngay.
-- Chat lưu bền, tìm/mở/đổi tên/xuất/xóa được, không gửi lặp khi chuyển trang.
-- Giao dịch và số dư nguyên tử, chống trùng/bán vượt/thứ tự ngày sai.
-- Giá có ngày, tiền tệ và nguồn; thiếu dữ liệu không thay bằng giá giả.
-- VND/USD giữ riêng; phân bổ vốn không gọi là hiệu suất tài khoản.
-- Nâng cấp giữ dữ liệu, CLI hoạt động, lịch dùng đúng thư mục mới.
-- Kiểm thử chức năng và kiểm tra hình ảnh được báo cáo riêng.
 
-## Ranh giới
-Bản local chưa có auth/billing/broker. Parser có phạm vi hữu hạn; RAG chưa fine-tune hoặc hiểu toàn bộ sách. Nguồn phát triển chưa xác nhận quyền phân phối thương mại; phương pháp chưa backtest. [Kế hoạch bán thử](COMMERCIAL_PLAN.md) và [Backlog](../notes/BACKLOG.md) ghi việc cần hoàn thiện.
+- Mở ứng dụng thấy biểu đồ một mã; không tự chạy bản tin hoặc tải cả bảng điện.
+- Quote, nến, khung thời gian và đơn vị khớp nhau trước khi phân tích.
+- Nến chưa đóng không xác nhận tín hiệu; dữ liệu lỗi/cũ/thiếu chuyển chờ.
+- Nhận định có bằng chứng, điều kiện xác nhận/vô hiệu và giờ dữ liệu.
+- AI không đổi action, tạo ID bằng chứng hoặc thêm giá/xác suất tùy ý.
+- Polling không gọi model; bấm nhận định/gửi câu hỏi chỉ lưu một lượt.
+- Nhận định lưu bối cảnh bất biến; đổi mã không trộn lịch sử.
+- Nâng cấp giữ dữ liệu; kiểm thử chức năng và QA hình ảnh được báo cáo riêng.
+
+## Ưu tiên tiếp theo
+
+Tạo tập đánh giá biểu đồ có nhãn, đánh giá nhận định trên model thật và kiểm định theo thời gian với phí/trượt giá. Sau khi có bằng chứng về chất lượng mới mở rộng phạm vi sử dụng. [Backlog](../notes/BACKLOG.md).
+
+Chưa có cam kết hiệu quả đầu tư, tự đặt lệnh, quét toàn sàn bằng tick stream hoặc sản phẩm SaaS sẵn sàng thu phí.

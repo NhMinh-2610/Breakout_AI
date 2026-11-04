@@ -2,7 +2,7 @@
 
 ## Bố cục và khoảng cách
 
-Menu trái và nội dung chính có mép căn riêng. Trang thị trường ưu tiên chỉ số, bảng giá rồi khu vực xem sâu một mã; thao tác ít dùng nằm trong popover hoặc tab.
+Menu trái và nội dung chính có mép căn riêng. Trang đầu ưu tiên chọn một mã, xem biểu đồ và đọc nhận định; bảng điện, bản tin và các công cụ hỗ trợ vẫn truy cập được ở luồng phụ.
 
 | Thành phần | Quy ước |
 | --- | --- |
@@ -20,9 +20,17 @@ Khoảng cách dùng các mốc 8/16/24/32px. Nội dung panel và nhãn có kho
 
 Trong bản 0.8, sửa hai nguyên nhân gây ép cột và chữ sát mép: CSS từng đổi gap ngang sang 24px trong khi Streamlit vẫn tính chiều rộng cột theo gap 16px; selector panel dùng :has quá rộng khiến khối cha cũng nhận padding/border. Cột thường nay giữ gap gốc, chỉ các lưới có key mới tự quản lý chiều rộng và khoảng cách. Selector panel giới hạn theo quan hệ con trực tiếp trên wrapper phù hợp; vùng chính có padding rõ.
 
-## Không gian bảng điện
+## Luồng chính: Phân tích AI
 
-Trang mặc định mở **Bảng điện Việt Nam**. **Biểu đồ VN / US** giữ giá ngày và MA20, với nguồn/nhịp tải riêng.
+Mở ứng dụng thấy **Phân tích AI → Phân tích biểu đồ**. Bộ điều khiển chỉ gồm mã, khung nến, theo dõi tự động và cập nhật. Trang lấy quote/nến của một mã, không dựng bảng điện/chỉ số hoặc chạy bản tin trước khi người dùng xem biểu đồ.
+
+Biểu đồ nằm bên trái; nhận định, Chat theo mã và Cơ hội hôm nay ở panel bên phải, xếp dọc khi vùng nội dung hẹp. Phần phân tích có cấu trúc nến đang quan sát và nút **Đọc biểu đồ & nhận định**.
+
+Bấm nút mới tạo nhận định; polling chỉ cập nhật dữ liệu quan sát. Nhận định đã lưu giữ dữ liệu lúc gửi, có nhãn để người dùng đọc lại nếu cần cập nhật. Đổi mã tách nhận định và lịch sử. Demo ghi rõ dùng quy tắc; model nhận dữ liệu OHLCV và chọn bằng chứng/kịch bản có ID, không nhận ảnh chụp.
+
+## Không gian bảng điện phụ
+
+Chuyển sang **Bảng điện Việt Nam** để xem toàn bộ danh sách theo dõi. **Biểu đồ VN / US** giữ giá ngày và MA20, với nguồn/nhịp tải riêng.
 
 Thứ tự nội dung:
 
@@ -57,7 +65,7 @@ Dùng “theo dõi mua”, “rà soát bán”, “giữ quan sát” và “ch
 
 Số điều kiện đạt mô tả các kiểm tra của ứng dụng, không biểu thị xác suất thắng. Giá, giờ nguồn, khung nến và điều kiện làm mất hiệu lực đi cùng kết luận. Bán chỉ xét mã trong danh mục sở hữu. Khi quote/nến cũ, nguồn lỗi hoặc dữ liệu chưa đủ, panel chuyển sang chờ.
 
-Sách được truy xuất để giải thích kiến thức trong chat. Không mô tả bộ tín hiệu kỹ thuật là chiến lược tự học từ toàn bộ sách. [Quy tắc phân tích](TECHNICAL_ANALYSIS.md).
+Sách được truy xuất để giải thích kiến thức trong chat. Không mô tả bộ tín hiệu kỹ thuật là chiến lược tự học từ toàn bộ sách. [Quy tắc phân tích](TECHNICAL_ANALYSIS.md) · [Hợp đồng observer](CHART_OBSERVER.md).
 
 ## Màu và khả năng đọc
 
@@ -77,7 +85,7 @@ Dùng Segoe UI/Arial và số tabular. Chú giải, dấu phần trăm, nhãn v�
 
 **Chat AI** là trang hội thoại đầy đủ: lịch sử tìm/mở lại/đổi tên/xuất, ô nhập gốc ở cấp trang. **Chat theo mã** nằm trong panel thị trường: lịch sử có vùng cuộn và form gửi ngay trong panel để không che bảng hoặc kéo composer toàn màn hình.
 
-Chỉ gửi câu hỏi mới gọi model; tự tải giá/nến không sinh thêm lượt chat. Câu trả lời gắn với bối cảnh lúc gửi, không tự thay nội dung lịch sử theo tick mới. Chế độ demo giải thích bằng quy tắc; model tùy chọn diễn giải bối cảnh đã chụp.
+Chỉ bấm nhận định hoặc gửi câu hỏi mới gọi model; tự tải giá/nến không sinh thêm lượt chat. Câu trả lời gắn với bối cảnh lúc gửi, không tự thay nội dung lịch sử theo tick mới. Chế độ demo giải thích bằng quy tắc; model tùy chọn chọn ID từ bối cảnh đã chụp và phần hiển thị được dựng sau kiểm tra hợp đồng.
 
 ## Màn hình nhỏ và xác minh
 

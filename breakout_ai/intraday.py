@@ -229,7 +229,15 @@ class IntradayService:
                 return None
             if data.get("asset_type", "equity") != ("index" if is_index else "equity"):
                 return None
-            if not isinstance(data["candles"], list) or not 1 <= len(data["candles"]) <= MAX_CANDLES:
+            if not isinstance(data["candles"], list) or len(data["candles"]) > MAX_CANDLES:
+                return None
+            if (not isinstance(data.get("errors", []), list)
+                    or any(not isinstance(error, str) for error in data.get("errors", []))
+                    or not isinstance(data.get("stale", True), bool)):
+                return None
+            # A failed first request has no successful receipt timestamp or bars.
+            # Persist its failure without turning an attempt time into fetched_at.
+            if not data["candles"] and not data.get("errors"):
                 return None
             data["candles"] = [_validate_candle(Candle(**row), self.clock()) for row in data["candles"]]
             if any(candle.interval_minutes != int(key[1]) for candle in data["candles"]):
@@ -237,7 +245,8 @@ class IntradayService:
             if len({c.time for c in data["candles"]}) != len(data["candles"]):
                 return None
             data["candles"].sort(key=lambda candle: candle.time)
-            if _moment(data["fetched_at"]) is None:
+            if _moment(data.get("fetched_at")) is None and (
+                    data["candles"] or data.get("fetched_at") is not None):
                 return None
             return IntradaySnapshot(**data)
         except (KeyError, TypeError, ValueError):
@@ -252,7 +261,9 @@ class IntradayService:
         candles = [replace(candle, complete=(_moment(candle.time) +
                    timedelta(minutes=candle.interval_minutes) <= now)) for candle in snapshot.candles]
         return replace(snapshot, candles=candles, from_cache=cached,
-                       stale=not (-30 <= age < self.cache_seconds and -30 <= source_age <= max_source_age))
+                       stale=snapshot.stale or bool(snapshot.errors) or not (
+                           -30 <= age < self.cache_seconds
+                           and -30 <= source_age <= max_source_age))
 
     def cached(self, symbol: str, resolution="5") -> IntradaySnapshot | None:
         """Read saved candles without requesting the provider, including when paused."""
@@ -293,16 +304,16 @@ class IntradayService:
             self._write_state(key, state, db)
             return claim
 
-    def _finish(self, key, claim, now, snapshot=None, hard_seconds=0):
+    def _finish(self, key, claim, now, snapshot=None, hard_seconds=0) -> bool:
         with self._transaction() as db:
             state = self._read_state(key, db)
             if state.get("claim_id") != claim:
-                return
+                return False
             state.update(claim_id=None, lease_until=None,
                          hard_until=(now + timedelta(seconds=hard_seconds)).isoformat() if hard_seconds else None)
             self._write_state(key, state, db)
             if snapshot is None:
-                return
+                return True
             if db is None:
                 self._memory[key] = snapshot
                 # Retain a small in-memory working set without dropping active
@@ -314,6 +325,7 @@ class IntradayService:
                 db.execute("""INSERT OR REPLACE INTO intraday_cache
                     (workspace,symbol,resolution,payload) VALUES (?,?,?,?)""",
                     (self.store.workspace, *key, json.dumps(asdict(snapshot))))
+            return True
 
     @staticmethod
     def _empty(key, error):
@@ -322,6 +334,13 @@ class IntradayService:
             source_url=_source_url(key[0]), errors=[error],
             price_unit="points" if is_index else "VND",
             asset_type="index" if is_index else "equity")
+
+    def _latest_after_conflict(self, key, now) -> IntradaySnapshot:
+        """Never expose a response whose claim was superseded by another poll."""
+        latest = self._read(key)
+        if latest is not None:
+            return self._status(latest, now, cached=True)
+        return self._empty(key, "Yêu cầu biểu đồ đã được thay thế; đang chờ dữ liệu từ lần tải mới.")
 
     def fetch(self, symbol: str, resolution="5", *, force=False) -> IntradaySnapshot:
         key = _identity(symbol, resolution)
@@ -333,8 +352,10 @@ class IntradayService:
                 return self._status(previous, now, cached=True)
             claim = self._claim(key, now, force)
             if claim is None:
+                # A different instance may have completed since the first read.
+                previous = self._read(key) or previous
                 return (replace(self._status(previous, now, cached=True),
-                                errors=["Đang chờ nhịp tải hoặc thời gian nghỉ của nguồn."])
+                                errors=previous.errors or ["Đang chờ nhịp tải hoặc thời gian nghỉ của nguồn."])
                         if previous else self._empty(key,
                             "Đang chờ nhịp tải hoặc thời gian nghỉ của nguồn."))
             hard_seconds = 0
@@ -359,13 +380,15 @@ class IntradayService:
                         payload = json.loads(b"".join(chunks))
                 received = self.clock()
                 snapshot = _parse(payload, *key, received)
-                self._finish(key, claim, received, snapshot)
+                if not self._finish(key, claim, received, snapshot):
+                    return self._latest_after_conflict(key, received)
                 return self._status(snapshot, received)
             except (httpx.HTTPError, ValueError, TypeError, OverflowError):
                 received = self.clock()
-                self._finish(key, claim, received, hard_seconds=hard_seconds)
                 error = "Chưa tải được nến DNSE; dữ liệu lưu trước đó có thể đã cũ."
-                if previous:
-                    return replace(self._status(previous, received, cached=True),
-                                   stale=True, errors=[error])
-                return self._empty(key, error)
+                fallback = (replace(self._status(previous, received, cached=True),
+                                    stale=True, errors=[error])
+                            if previous else self._empty(key, error))
+                if not self._finish(key, claim, received, fallback, hard_seconds=hard_seconds):
+                    return self._latest_after_conflict(key, received)
+                return fallback

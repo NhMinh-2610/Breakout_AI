@@ -1,5 +1,15 @@
 # Nhật ký Breakout AI
 
+## 05/11/2026 — Bản 0.9, tập trung AI quan sát biểu đồ
+
+Đợt bắt đầu từ yêu cầu rà soát ngày 04/11 chuyển luồng chính sang chọn một mã, đọc dữ liệu nến và đối chiếu cơ hội/rủi ro. Trang đầu không còn cần chạy bản tin theo sách hoặc tải toàn bộ bảng điện. Dữ liệu vị thế, sách, bản tin và lịch sử được giữ; không dọn thư mục output của người dùng.
+
+Observer tạo một bối cảnh dùng chung cho panel/scanner/chat: report, tối đa 60 nến đã đóng, facts và scenarios. Model nhận dữ liệu số phía sau biểu đồ, chỉ chọn ID bằng chứng/kịch bản theo hợp đồng; phần hiển thị dựng từ dữ liệu chuẩn. Phản hồi ngoài hợp đồng quay về quy tắc, demo không giả là model đã được kết nối. Lượt nhận định lưu chart_context/interpretation và không tự gọi lại theo chu kỳ thị trường.
+
+Rà soát tìm được hai lỗi nguồn: force-refresh lỗi sau cache mới có thể mất trạng thái lỗi ở rerun; phản hồi mất claim vẫn có thể trả kết quả cũ cho UI. Đã giữ lỗi đến lần tải thành công và trả snapshot chủ mới khi bị fencing. Tách trang thị trường/helper khỏi app.py, loại khai báo CSS bị ghi đè và đồng bộ tài liệu.
+
+633 kiểm thử toàn bộ đạt; HTTP trang/health 200 và compileall đạt. Sáu module được định dạng giữ nguyên AST. Kết quả được ghi tại [Kiểm thử](../docs/TESTING.md). Chưa có QA ảnh trình duyệt hoặc đo chất lượng model/lợi nhuận thực. Ưu tiên tiếp theo là tập đánh giá, model thật và backtest có phí, trước các chức năng SaaS.
+
 ## 19/10/2026 — Bản 0.8, bố cục bảng điện và phân tích theo mã
 
 Ảnh người dùng cung cấp cho thấy nội dung bị ép và chữ sát mép. Đối chiếu DOM/width calculation của Streamlit phát hiện gap ngang CSS 24px khác gap 16px mà cột gốc dùng tính độ rộng; selector panel :has quá rộng cũng áp border/padding lên khối tổ tiên. Sửa về gap gốc cho cột thường, dùng lưới có key để quản lý width/gap và giới hạn selector wrapper/con trực tiếp. Nội dung chính/panel có khoảng đệm riêng.

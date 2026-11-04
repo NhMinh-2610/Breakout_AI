@@ -1,10 +1,10 @@
 # Breakout AI
 
-**Hiểu dữ liệu. Đầu tư có cơ sở.**
+**Quan sát biểu đồ. Đối chiếu cơ hội. Hiểu điều kiện và rủi ro.**
 
-Breakout AI là trợ lý nghiên cứu cổ phiếu Việt Nam và Mỹ, kết hợp dữ liệu thị trường, kiến thức trong sách và danh mục cá nhân. Bản **0.8.0** chạy trên máy bằng Python, Streamlit và SQLite.
+Breakout AI **0.9.0** tập trung vào một việc: đọc dữ liệu giá/khối lượng tạo nên biểu đồ cổ phiếu Việt Nam và đưa ra nhận định có căn cứ. Ứng dụng chạy local bằng Python, Streamlit và SQLite.
 
-Bảng điện Việt Nam có giá, biểu đồ chỉ số, nến trong phiên và khung phân tích/chat theo mã. Ứng dụng cũng giữ bản tin 07:30, biểu đồ ngày VN/Mỹ, sổ mua/bán và tin tức có nguồn. “Breakout” là tên sản phẩm; từng kịch bản cần điều kiện và dữ liệu cụ thể.
+Luồng chính: **Chọn mã → quan sát nến → kiểm tra bằng chứng → đọc nhận định → hỏi phản biện.** Màn hình mặc định mở biểu đồ của một mã, không tải bảng điện hoặc chạy bản tin theo sách trước.
 
 ## Chạy ứng dụng
 
@@ -14,89 +14,64 @@ Mở terminal tại thư mục `Breakout_AI`:
 .\.venv\Scripts\python.exe -m streamlit run app.py --server.port 8507
 ```
 
-Mở **http://localhost:8507**. Hoặc chạy `.\scripts\run.ps1`; đổi cổng bằng `.\scripts\run.ps1 -Port 8510`. Sau cập nhật, dừng tiến trình cũ bằng Ctrl+C rồi chạy lại để nạp theme.
+Mở **http://localhost:8507**. Có thể dùng `.\scripts\run.ps1`; máy mới chạy `.\scripts\setup.ps1 -Dev`. [Hướng dẫn cài đặt](docs/GETTING_STARTED.md).
 
-Máy mới: `.\scripts\setup.ps1 -Dev`. Chi tiết: [Bắt đầu](docs/GETTING_STARTED.md).
+## Dùng luồng phân tích
 
-## Dùng trong 5 phút
+1. Mở **Phân tích AI → Phân tích biểu đồ**.
+2. Chọn mã và khung nến **1/5/15 phút**. Xem cấu trúc giá, SMA20, RSI14, hỗ trợ/kháng cự và khối lượng.
+3. Đọc trạng thái quan sát, bằng chứng và điều kiện còn thiếu. Nến đang hình thành có thể hiển thị nhưng không xác nhận tín hiệu.
+4. Bấm **Đọc biểu đồ & nhận định** để lưu một nhận định theo dữ liệu tại lúc gửi. Trong demo, đây là diễn giải bằng quy tắc; khi cấu hình model, AI chọn bằng chứng và kịch bản từ bối cảnh đã kiểm tra.
+5. Dùng **Chat theo mã** để hỏi lý do, phản biện hoặc kiến thức liên quan. Nhận định và hội thoại có thể mở lại tại **Lịch sử & hỏi đáp**.
 
-1. **Danh mục & giao dịch:** nhập cổ phiếu đang giữ, số lượng và giá vốn; VN dùng VND đầy đủ, US dùng USD.
-2. **Bảng điện & biểu đồ:** chọn mã và khung nến 1/5/15 phút; xem giá, khối lượng, cung cầu và phần **Phân tích**.
-3. **Chat theo mã:** hỏi “Vì sao chưa nên mua?”, “Hỗ trợ có phải đáy không?” hoặc “Lực mua/bán đang thế nào?”. Lịch sử cũng mở được tại **Chat AI**.
-4. **Cơ hội hôm nay:** chọn tối đa 6 mã và bấm **Quét tín hiệu hôm nay**. Sau khi bắt đầu, kết quả tiếp tục cập nhật theo dữ liệu khi tự cập nhật đang bật.
-5. **Thư viện sách:** tải PDF/TXT/MD để tra cứu, đối chiếu giải thích; chọn nguyên tắc đã kiểm tra để dùng bản tin tại **Tổng quan**.
+Để thêm mã ngoài danh sách hiện có, chuyển sang **Bảng điện Việt Nam → Tùy chọn bảng** và lưu danh sách theo dõi. **Cơ hội hôm nay** cho phép chọn tối đa 6 mã để quét sau khi bấm bắt đầu.
 
-Ghi các lần mua/bán đã thực hiện trong **Ghi giao dịch** để cập nhật danh mục. Không có sách thương mại hoặc vị thế giả nạp sẵn. [Tài liệu thử](examples/daily_rules.md) do dự án tự viết chỉ dùng kiểm tra chức năng.
+## AI đang đọc gì?
 
-## Các màn hình
+Observer tạo một bối cảnh thống nhất gồm quote đúng mã, báo cáo kỹ thuật, tối đa **60 nến OHLCV đã đóng**, các bằng chứng có ID và các kịch bản xác nhận/vô hiệu. AI nhận dữ liệu số đứng sau biểu đồ; phiên bản này chưa nhận ảnh chụp biểu đồ.
 
-| Mục | Công việc |
+Khi dùng model, phản hồi phải là JSON với bốn trường `action`, `focus_fact_ids`, `risk_fact_ids` và `scenario_id`. Ứng dụng kiểm tra ID, giữ nguyên trạng thái của bộ quy tắc rồi dựng văn bản từ dữ liệu gốc. Nội dung model tự tạo thêm giá mục tiêu, xác suất hoặc kết luận vượt qua blocker không được hiển thị như nhận định hợp lệ. Phản hồi sai hợp đồng quay về diễn giải theo quy tắc.
+
+[Hợp đồng quan sát biểu đồ](docs/CHART_OBSERVER.md) · [Quy tắc kỹ thuật](docs/TECHNICAL_ANALYSIS.md).
+
+## Kết quả được diễn đạt thế nào?
+
+| Trạng thái | Ý nghĩa |
 | --- | --- |
-| Tổng quan | Bản tin theo sách, giá ngày tự tải và bản tin cũ |
-| Bảng điện & biểu đồ | Chỉ số, bảng giá VN, nến/khối lượng, phân tích/chat theo mã; biểu đồ ngày VN/Mỹ riêng |
-| Danh mục & giao dịch | Xem vị thế, ghi mua/bán, lọc lịch sử và xuất CSV |
-| Tin tức | Tìm tiêu đề VN/Mỹ, xem nguồn/thời gian và mở báo gốc |
-| Chat AI | Hỏi đáp, tìm/mở lại/đổi tên/xuất/xóa hội thoại |
-| Thư viện sách | Nhập sách, tìm đoạn, chọn và kiểm tra nguyên tắc |
+| Theo dõi điểm mua | Có mẫu hình đủ điều kiện giá, khối lượng và dữ liệu hiện tại |
+| Rà soát điểm bán | Mã đang sở hữu có điều kiện rủi ro được xác nhận |
+| Tiếp tục quan sát | Chưa có điều kiện mới đủ để thay đổi nhận định |
+| Chờ | Dữ liệu cũ/thiếu/lỗi hoặc mẫu hình chưa được xác nhận |
 
-## Bảng điện, biểu đồ và phân tích
+Giá thấp hoặc RSI thấp chưa chứng minh đã tạo đáy. Số điều kiện đạt là số kiểm tra, không phải xác suất thắng. Các quy tắc hiện chưa được kiểm định thành chiến lược đầu tư; ứng dụng chưa tự đặt lệnh.
 
-Mở **Bảng điện & biểu đồ → Bảng điện Việt Nam**. Phía trên là bốn chỉ số VN-Index, VN30, HNX-Index và UPCoM-Index với đường diễn biến từ nến thật. Bên dưới là bảng giá có trần/sàn/tham chiếu, ba mức mua/bán, khớp lệnh, tổng giao dịch, OHLC/giá bình quân và khối ngoại. Bố cục nhóm cột tham khảo [bảng giá DNSE](https://banggia.dnse.com.vn/v2).
+## Dữ liệu và nhịp cập nhật
 
-Bảng theo dõi tối đa 30 mã do bạn chọn, hỗ trợ lọc sàn, tìm và sắp xếp. Mở **Tùy chọn bảng** để đổi nhịp tải, đầy đủ/rút gọn hoặc danh sách mã. Bộ lọc áp dụng danh sách này. Giá bảng theo nghìn VND, khối lượng là cổ phiếu, giá trị giao dịch theo triệu VND; chỉ số dùng điểm.
+Trang phân tích chính chỉ yêu cầu quote và nến của mã đang xem. Tự cập nhật thị trường không gọi model; model chỉ chạy khi bấm nhận định hoặc gửi câu hỏi.
 
-Sau khi chọn mã, khung bên trái hiện nến, SMA20, hỗ trợ/kháng cự, khối lượng và cung cầu ba mức. Khung bên phải gồm **Phân tích**, **Chat theo mã** và **Cơ hội hôm nay**. Mã đang xem được giữ khi thứ hạng bảng thay đổi.
-
-Phân tích tính RSI14, xu hướng, vùng giá và khối lượng xác nhận từ nến đã đóng. Kết quả gồm theo dõi mua, rà soát bán với mã đang sở hữu, giữ quan sát hoặc chờ. Giá thấp hoặc RSI thấp chưa đủ để khẳng định đã chạm đáy. Mỗi kết quả nêu điều kiện, mốc mất hiệu lực và giờ dữ liệu; số điều kiện đạt không phải xác suất sinh lời. [Quy tắc phân tích](docs/TECHNICAL_ANALYSIS.md).
-
-Chat nhận bối cảnh giá/phân tích tại lúc bạn gửi, truy xuất tối đa hai đoạn sách để giải thích và lưu lịch sử. Chế độ demo giải thích bằng quy tắc; model tùy chọn chỉ được gọi khi gửi câu hỏi. Bộ tín hiệu kỹ thuật chưa tự học toàn bộ sách thành chiến lược.
-
-Các nhịp tải hoạt động khi trang đang mở:
-
-| Dữ liệu | Nhịp mặc định |
+| Dữ liệu | Nguồn / nhịp |
 | --- | --- |
-| Snapshot bảng giá DNSE | 5 giây, chọn thêm 10/30 giây |
-| Nến cổ phiếu | Cache 30 giây |
-| Nến chỉ số | Cache 60 giây |
-| Giá ngày VN/Mỹ | Cache 5 phút |
+| Snapshot cổ phiếu VN | DNSE public snapshot; mặc định 5 giây |
+| Nến cổ phiếu VN | DNSE public OHLCV; cache 30 giây |
+| Chỉ số ở chế độ bảng điện | DNSE index OHLCV; cache 60 giây |
+| Biểu đồ ngày VN / US | KBS / Yahoo; luồng riêng |
 
-Có tạm dừng và cập nhật thủ công. Giờ nguồn tách giờ tải; dữ liệu cũ/thiếu chặn tín hiệu theo thời điểm, độ sâu cũ được ẩn. Đây là các snapshot tải định kỳ, chưa có luồng đẩy từng tick. [Bảng điện](docs/REALTIME.md) · [Nến và chỉ số](docs/INTRADAY.md).
+Có tạm dừng và cập nhật thủ công. Giờ nguồn, giờ nhận và thời gian nến được giữ riêng. Lỗi nguồn được giữ qua cache/rerun đến khi tải lại thành công; phản hồi cũ về muộn không thay thế dữ liệu mới. Đây là polling snapshot, chưa có luồng tick đẩy. [Snapshot](docs/REALTIME.md) · [Nến/chỉ số và đơn vị](docs/INTRADAY.md).
 
-Chọn **Biểu đồ VN / US** để xem dữ liệu ngày KBS (VN) và Yahoo (US); bản tin ở Tổng quan tiếp tục dùng luồng giá ngày và nguyên tắc sách riêng.
+## Các công cụ hỗ trợ
 
-## Bản tin 07:30
+Danh mục/giao dịch, kiến thức từ sách, lịch sử hỏi đáp, bản tin theo sách và tin tức vẫn được giữ để hỗ trợ nghiên cứu. Bảng điện đầy đủ và biểu đồ ngày VN/US nằm trong các chế độ phụ; phân tích nến trong phiên hiện dành cho cổ phiếu VN.
+
+Sách được truy xuất theo đoạn/trang để giải thích, chưa huấn luyện lại trọng số model hoặc tự biến toàn bộ sách thành chiến lược. Bản tin theo sách lúc 07:30 có luồng riêng. [Sách](docs/BOOKS.md) · [Bản tin](docs/DAILY_GUIDE.md) · [Sổ giao dịch](docs/TRADES.md).
+
+## Phát triển và xác minh
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\daily-schedule.ps1 -Mode Install
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\daily-schedule.ps1 -Mode Status
+.\.venv\Scripts\python.exe -m pytest
 ```
 
-Lịch chạy **07:30 giờ Việt Nam**, cần máy bật, tài khoản đăng nhập và kết nối mạng. App có thể đóng. Bản tin lưu trong ứng dụng, chưa gửi thông báo hoặc đặt lệnh. [Hướng dẫn hằng ngày](docs/DAILY_GUIDE.md).
+Dự án tách lớp dữ liệu, kiểm tra kỹ thuật, observer, diễn giải model và giao diện. Các kiểm thử phần mềm không chứng minh hiệu quả đầu tư. Trạng thái model thật, API thật và QA trình duyệt được ghi riêng tại [Kiểm thử](docs/TESTING.md).
 
-Chạy ngay: `.\.venv\Scripts\python.exe -m breakout_ai.daily --refresh`.
+[Sản phẩm](docs/PRODUCT.md) · [Kiến trúc](docs/ARCHITECTURE.md) · [UI/UX](docs/UI_UX.md) · [Bản đồ tài liệu](docs/README.md) · [Backlog](notes/BACKLOG.md).
 
-## Phạm vi thực tế
-
-- Sách được trích chữ và truy xuất theo đoạn/trang; chưa huấn luyện lại trọng số LLM.
-- Bản tin theo sách và tín hiệu kỹ thuật trong phiên có quy tắc riêng, chưa có kết quả kiểm định hiệu quả đầu tư.
-- Nguồn công khai có thể chậm hoặc gián đoạn; thiếu dữ liệu hiển thị dấu gạch, không tạo giá hay biểu đồ mẫu.
-- Demo không cần key; có thể cấu hình OpenAI/Ollama để diễn giải tự nhiên.
-- Nhật ký lưu giao dịch bạn đã thực hiện; chưa kết nối broker, không tự đặt lệnh.
-- Auth, billing và quyền phân phối dữ liệu thương mại cần hoàn thiện trước khi bán.
-
-## Mã và tài liệu
-
-[Bản đồ tài liệu](docs/README.md) · [Sản phẩm](docs/PRODUCT.md) · [UI/UX](docs/UI_UX.md) · [Kiến trúc](docs/ARCHITECTURE.md) · [Kiểm thử](docs/TESTING.md) · [Chuyển đổi tên](docs/MIGRATION.md)
-
-```text
-app.py                Điều hướng và màn hình Streamlit
-assets/               Theme, logo và favicon
-breakout_ai/           Dữ liệu, sách, chat, danh mục và bản tin
-content/              Ghi chú tài chính nền có nguồn
-scripts/              Cài đặt, chạy, kiểm thử và lịch Windows
-tests/                Kiểm thử nghiệp vụ, adapter và giao diện
-docs/                 Hướng dẫn sử dụng và kỹ thuật
-notes/                Quyết định, backlog và nhật ký
-```
-
-Kiểm tra: `.\.venv\Scripts\python.exe -m pytest`. Nâng cấp giữ database đã có; không đổi hoặc xóa dữ liệu để đổi thương hiệu. Bản 0.8 sửa cách căn cột/panel theo DOM Streamlit; chưa xác minh ảnh chụp desktop/mobile vì Browser không khả dụng trong phiên.
+Nguồn phát triển có thể chậm hoặc gián đoạn; quyền hiển thị/phân phối thương mại cần xác nhận trước khi bán dịch vụ.

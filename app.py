@@ -12,18 +12,16 @@ from breakout_ai.brand import NAME
 from breakout_ai.books import BookError, BookLibrary
 from breakout_ai.config import ROOT, Settings
 from breakout_ai.daily import DailyPlanner, VN_TIME, rules_signature
-from breakout_ai.dashboard import allocation_chart, price_chart, price_summary, workflow_diagram
-from breakout_ai.finance import validate_symbol
+from breakout_ai.dashboard import allocation_chart, price_summary, workflow_diagram
 from breakout_ai.market import MarketError, MarketService
 from breakout_ai.news import FEEDS, NewsService
 from breakout_ai.market_view import load_quotes
-from breakout_ai.realtime import BoardSnapshot, RealtimeService, MAX_SYMBOLS
-from breakout_ai.priceboard import DEFAULT_SYMBOLS, board_table, depth_table, format_number, time_label
 from breakout_ai.portfolio import Portfolio
 from breakout_ai.providers import ProviderError
 from breakout_ai.storage import Store
 from breakout_ai.tutor import STYLES, Tutor, chat_turn
-from breakout_ai.workbench import render_workbench, render_indices
+from breakout_ai.market_page import market_page
+from breakout_ai.ui_common import chart_panel, identities, intro, local_time
 
 st.set_page_config(page_title=f"{NAME} · Nghiên cứu đầu tư", page_icon=str(ROOT / "assets" / "favicon.png"), layout="wide", initial_sidebar_state="expanded")
 BRAND_MARK = (ROOT / "assets" / "brand-mark.svg").read_text(encoding="utf-8")
@@ -40,14 +38,6 @@ def new_conversation(store: Store, delete: bool = False) -> None:
     identifier = st.session_state.pop("conversation_id", None)
     if delete and identifier:
         store.delete_conversation(identifier)
-
-
-def intro(kicker: str, title: str, description: str) -> None:
-    st.markdown(f'<div class="masthead"><div class="eyebrow">{escape(kicker)}</div><h1>{escape(title)}</h1><p>{escape(description)}</p></div>', unsafe_allow_html=True)
-
-
-def local_time(value: str) -> str:
-    return datetime.fromisoformat(value).astimezone(VN_TIME).strftime("%H:%M · %d/%m/%Y")
 
 
 def schedule_caption(settings: Settings) -> str:
@@ -280,33 +270,6 @@ def books_page(library: BookLibrary, planner: DailyPlanner) -> None:
             st.button("Xóa sách", key=f"delete_{book['id']}", on_click=library.delete, args=(book["id"],))
 
 
-def identities(portfolio: Portfolio) -> list[tuple[str, str]]:
-    return list(dict.fromkeys([(row["market"], row["symbol"]) for row in portfolio.holdings()] + [tuple(pair) for pair in portfolio.preferences()["candidates"]]))
-
-
-def chart_panel(snapshot, days: int = 90, compact: bool = False) -> None:
-    summary = price_summary(snapshot, days)
-    if summary is None:
-        st.info("Nguồn chưa có đủ dữ liệu để vẽ biểu đồ.")
-        return
-    with st.container(key="price_metrics"):
-        columns = st.columns(2 if compact else 4)
-        change = summary["change_pct"]
-        columns[0].metric(f"{snapshot.symbol} · {snapshot.currency}", f"{summary['latest_close']:,.2f}", f"{change:+.2f}% so phiên trước" if change is not None else None)
-        period = summary["period_change_pct"]
-        columns[1].metric("Thay đổi giá trong khoảng", f"{period:+.2f}%" if period is not None else "—")
-        if not compact:
-            columns[2].metric("Số phiên có dữ liệu", summary["observations"])
-            columns[3].metric("Mức giảm từ đỉnh trong khoảng", f"{summary['max_drawdown_pct']:.2f}%")
-    chart = price_chart(snapshot, days)
-    if chart is not None:
-        st.altair_chart(chart.interactive(bind_y=False), use_container_width=True, theme=None)
-    st.caption(f"{summary['basis_label']} · phiên {summary['as_of']} · {snapshot.provider} · lấy lúc {local_time(snapshot.fetched_at)}")
-    if snapshot.cache_stale:
-        st.caption("Đang xem bản lưu đã cũ hoặc lần tải lại chưa thành công. Bấm cập nhật để thử lấy dữ liệu mới.")
-    st.caption("Biến động giá của mã, chưa phải hiệu suất tài khoản. Bar cuối của nguồn có thể thuộc phiên chưa đóng.")
-
-
 def report_archive(portfolio: Portfolio) -> None:
     reports = portfolio.recent_reports(60)
     if not reports:
@@ -529,175 +492,6 @@ def portfolio_page(portfolio: Portfolio) -> None:
         trade_history(portfolio)
 
 
-def historical_market_page(settings: Settings, store: Store, portfolio: Portfolio) -> None:
-    st.caption("Biểu đồ giá theo phiên · Việt Nam và Mỹ · dữ liệu này tách riêng bảng điện Việt Nam.")
-    service = MarketService(settings, store)
-    with st.form("market_chart"):
-        first, second, third = st.columns([1, 1.8, 1.2])
-        market = first.selectbox("Thị trường biểu đồ", ["VN", "US"], key="chart_market")
-        symbol = second.text_input("Mã cần xem biểu đồ", value="FPT", max_chars=12, key="chart_symbol")
-        days = third.selectbox("Khoảng thời gian", [30, 90, 180], index=1, format_func=lambda value: f"{value} ngày lịch", key="chart_days")
-        submitted = st.form_submit_button("Xem và cập nhật biểu đồ", type="primary")
-    try:
-        symbol = validate_symbol(symbol)
-        if submitted:
-            with st.spinner("Đang tải dữ liệu từ nguồn thị trường…"):
-                snapshot = service.get(market, symbol, force=True)
-        else:
-            loaded = load_quotes(service, [(market, symbol)], st.session_state)
-            snapshot = loaded.snapshots.get((market, symbol))
-            if loaded.errors:
-                st.warning("Chưa cập nhật được giá; bạn có thể thử lại bằng nút xem biểu đồ.")
-    except MarketError as exc:
-        st.error(str(exc))
-        snapshot = None
-    except ValueError as exc:
-        st.error(str(exc))
-        snapshot = None
-    if snapshot:
-        with st.container(border=True):
-            chart_panel(snapshot, days)
-            st.link_button("Đối chiếu nguồn dữ liệu", snapshot.source_url)
-        with st.expander("Bảng dữ liệu giá theo phiên"):
-            st.dataframe([{"Phiên": bar.date, "Giá đóng cửa": bar.close, "Khối lượng": bar.volume, "Giá điều chỉnh": bar.adjusted_close, "Tiền tệ": snapshot.currency} for bar in snapshot.bars], use_container_width=True, hide_index=True)
-    else:
-        st.info("Chọn thị trường, nhập mã và bấm xem để lấy dữ liệu thật. Ứng dụng không vẽ giá giả khi chưa có dữ liệu.")
-    with st.container(key="market_watchlist"):
-        st.subheader("Bảng theo dõi cổ phiếu")
-        wanted = identities(portfolio)[:service.settings.market_max_symbols]
-        force = st.button("Cập nhật bảng theo dõi", key="watchlist_refresh", use_container_width=True, disabled=not settings.market_enabled or not wanted)
-        loaded = load_quotes(service, wanted, st.session_state, force=force)
-        if force:
-            st.rerun()
-        rows = []
-        for identity in wanted:
-            saved = loaded.snapshots.get(identity)
-            if saved:
-                data = saved.summary()
-                rows.append({"Mã": ":".join(identity), "Giá": data["close"], "Tiền tệ": data["currency"], "Thay đổi (%)": data["change_pct"], "Phiên": data["as_of"], "Nguồn": data["provider"], "Trạng thái": "Giá cũ · cần cập nhật" if saved.cache_stale else "Đã cập nhật"})
-            else:
-                rows.append({"Mã": ":".join(identity), "Giá": None, "Tiền tệ": "VND" if identity[0] == "VN" else "USD", "Thay đổi (%)": None, "Phiên": None, "Nguồn": settings.vn_market_provider if identity[0] == "VN" else settings.us_market_provider, "Trạng thái": "Chưa có dữ liệu"})
-        if rows:
-            st.dataframe(rows, use_container_width=True, hide_index=True, column_config={"Giá": st.column_config.NumberColumn(format="%.2f"), "Thay đổi (%)": st.column_config.NumberColumn(format="%+.2f%%")})
-            st.caption("Mỗi dòng giữ riêng tiền tệ và phiên nguồn. Dấu trống nghĩa chưa có giá, không phải giá bằng 0.")
-        if loaded.errors:
-            with st.expander("Các mã chưa cập nhật được"):
-                for error in loaded.errors:
-                    st.text(error)
-
-
-def board_symbols(store: Store, portfolio: Portfolio) -> list[str]:
-    with store.connection() as db:
-        db.execute("CREATE TABLE IF NOT EXISTS board_preferences (workspace TEXT PRIMARY KEY, symbols TEXT NOT NULL)")
-        saved = db.execute("SELECT symbols FROM board_preferences WHERE workspace=?", (store.workspace,)).fetchone()
-    if saved:
-        try:
-            symbols = json.loads(saved["symbols"])
-            if isinstance(symbols, list) and 0 < len(symbols) <= MAX_SYMBOLS and all(isinstance(value, str) and re.fullmatch(r"[A-Z][A-Z0-9]{1,9}", value) for value in symbols):
-                return list(dict.fromkeys(symbols))
-        except (ValueError, TypeError):
-            pass
-    owned = [symbol for market, symbol in identities(portfolio) if market == "VN"]
-    return list(dict.fromkeys(owned + list(DEFAULT_SYMBOLS)))[:MAX_SYMBOLS]
-
-
-def save_board_symbols(store: Store, raw: str) -> None:
-    symbols = list(dict.fromkeys(value.upper() for value in re.split(r"[\s,;]+", raw.strip()) if value))
-    if not symbols or len(symbols) > MAX_SYMBOLS or any(not re.fullmatch(r"[A-Z][A-Z0-9]{1,9}", symbol) for symbol in symbols):
-        raise ValueError(f"Nhập 1–{MAX_SYMBOLS} mã Việt Nam, mỗi mã gồm 2–10 ký tự chữ và số, cách nhau bằng dấu phẩy hoặc xuống dòng.")
-    with store.connection() as db:
-        db.execute("INSERT OR REPLACE INTO board_preferences VALUES (?,?)", (store.workspace, json.dumps(symbols)))
-
-
-@st.fragment(run_every=5)
-def live_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> None:
-    with st.container(key="market_terminal"):
-        render_priceboard(settings, store, portfolio)
-
-
-def render_priceboard(settings: Settings, store: Store, portfolio: Portfolio) -> None:
-    symbols = board_symbols(store, portfolio)
-    render_indices(settings, store, auto=st.session_state.get("board_auto", True))
-    with st.container(key="live_board_controls"):
-        exchange_col, search_col, sort_col, auto_col, edit_col, refresh_col = st.columns([1, 1.25, 1.35, 1, 1, 1.1], vertical_alignment="bottom")
-        exchange = exchange_col.selectbox("Sàn giao dịch", ["Tất cả", "HOSE", "HNX", "UPCOM"], key="board_exchange")
-        search = search_col.text_input("Tìm mã", placeholder="Ví dụ: VIC", max_chars=10, key="board_search").strip().upper()
-        order = sort_col.selectbox("Sắp xếp", ["Mã A → Z", "Tăng giá nhiều nhất", "Giảm giá nhiều nhất", "Khối lượng lớn nhất"], key="board_sort")
-        auto = auto_col.checkbox("Tự cập nhật", value=True, key="board_auto", disabled=not settings.market_enabled)
-        with edit_col.popover("Tùy chọn bảng", use_container_width=True):
-            interval = st.selectbox("Nhịp cập nhật", [5, 10, 30], format_func=lambda value: f"{value} giây", key="board_interval")
-            full = st.checkbox("Đầy đủ thông tin", value=True, key="board_full")
-            st.caption(f"Danh sách theo dõi · tối đa {MAX_SYMBOLS} mã. Bộ lọc áp dụng cho danh sách này.")
-            st.session_state.setdefault("board_symbols_input", ", ".join(symbols))
-            with st.form("board_symbols_form"):
-                raw = st.text_area("Mã trên bảng điện", key="board_symbols_input", height=90, max_chars=450)
-                saved = st.form_submit_button("Lưu mã trên bảng điện")
-            if saved:
-                try:
-                    save_board_symbols(store, raw)
-                    symbols = board_symbols(store, portfolio)
-                    st.success("Đã lưu danh sách bảng điện.")
-                except ValueError as exc:
-                    st.error(str(exc))
-        refresh = refresh_col.button("Làm mới", type="primary", key="board_refresh", use_container_width=True, disabled=not settings.market_enabled)
-    service = RealtimeService(store, poll_seconds=interval)
-    if settings.market_enabled and (auto or refresh):
-        snapshot = service.fetch(symbols, force=refresh)
-    else:
-        snapshot = service.cached(symbols) or BoardSnapshot()
-    quotes = {quote.symbol: quote for quote in snapshot.quotes}
-    visible = [symbol for symbol in symbols if (not search or search in symbol) and (exchange == "Tất cả" or (symbol in quotes and quotes[symbol].exchange == exchange))]
-    def sort_value(symbol):
-        quote = quotes.get(symbol)
-        value = getattr(quote, "total_volume" if order == "Khối lượng lớn nhất" else "change_pct", None)
-        return (value is None, -value if value is not None and order != "Giảm giá nhiều nhất" else value or 0, symbol)
-    visible.sort(key=None if order == "Mã A → Z" else sort_value)
-    status = f"Snapshot DNSE · cập nhật {interval} giây" if auto and settings.market_enabled else "Đã tạm dừng tự cập nhật"
-    received = time_label(snapshot.fetched_at) if snapshot.fetched_at else "Chưa tải được dữ liệu"
-    st.markdown('<div class="priceboard-toolbar"><div><div class="priceboard-title">Bảng điện Việt Nam</div><div class="priceboard-caption">Giá ×1.000 đ · KL cổ phiếu · GT triệu đồng</div></div><div class="priceboard-status">' + escape(status) + '<span>Lần tải: ' + escape(received) + '</span></div></div>', unsafe_allow_html=True)
-    if not settings.market_enabled:
-        st.info("Nguồn giá đang tắt trong cấu hình. Bảng chỉ hiển thị bản đã lưu, nếu có.")
-    if snapshot.errors:
-        st.warning("Kết nối chưa đầy đủ. Các trường thiếu để trống; bản lưu cũ được đánh dấu.")
-        with st.expander("Chi tiết kết nối bảng điện"):
-            for error in snapshot.errors:
-                st.text(error)
-    priced = [quotes[symbol] for symbol in visible if symbol in quotes and quotes[symbol].last is not None]
-    with st.container(key="live_board_summary"):
-        up = sum(quote.change is not None and quote.change > 0 for quote in priced)
-        down = sum(quote.change is not None and quote.change < 0 for quote in priced)
-        flat = sum(quote.change == 0 for quote in priced)
-        st.markdown(f'<div class="priceboard-summary"><span>Đang xem <strong>{len(visible)}/{len(symbols)}</strong> mã</span><span class="price-up">Tăng <strong>{up}</strong></span><span class="price-down">Giảm <strong>{down}</strong></span><span class="price-ref">Tham chiếu <strong>{flat}</strong></span><span>Trong danh sách theo dõi</span></div>', unsafe_allow_html=True)
-    if snapshot.stale or any(quote.stale for quote in snapshot.quotes):
-        st.caption("Dòng mờ: giờ khớp nguồn đã quá 3 phút hoặc chưa có giờ nguồn; có thể ngoài phiên hoặc mã chưa phát sinh giao dịch mới. Độ sâu cũ được ẩn.")
-    selected = None
-    if visible:
-        detail_symbols = sorted(visible)
-        previous = st.session_state.get("board_selected")
-        # Ranking updates reorder table rows, never the security being inspected.
-        st.session_state["board_selected"] = previous if previous in detail_symbols else detail_symbols[0]
-        selected = st.session_state["board_selected"]
-    st.markdown(board_table(snapshot.quotes, visible, selected=selected, full=full), unsafe_allow_html=True)
-    st.markdown('<div class="priceboard-legend"><span class="price-ceiling">● Trần</span><span class="price-up">● Tăng</span><span class="price-ref">● Tham chiếu</span><span class="price-down">● Giảm</span><span class="price-floor">● Sàn</span><span>— Chưa có dữ liệu</span></div>', unsafe_allow_html=True)
-    if visible:
-        with st.container(key="market_analysis_controls"):
-            selection, timeframe, update = st.columns([1.6, 1, 1], vertical_alignment="bottom")
-            selected = selection.selectbox("Chi tiết mã", detail_symbols, key="board_selected")
-            resolution = timeframe.selectbox("Khung nến", ["1", "5", "15"], index=1, format_func=lambda value: f"{value} phút", key="market_candle_resolution")
-            chart_refresh = update.button("Cập nhật biểu đồ", key="market_chart_refresh", disabled=not settings.market_enabled, use_container_width=True)
-        render_workbench(settings, store, portfolio, snapshot, symbols, selected, resolution=resolution, auto=auto, refresh=chart_refresh or refresh)
-    st.caption("Bảng tải snapshot theo nhịp đã chọn khi đang mở trang. Dữ liệu phụ thuộc nguồn; chưa phải luồng đẩy từng giao dịch.")
-    st.markdown("[Mở bảng giá DNSE để đối chiếu](https://banggia.dnse.com.vn/v2)")
-
-
-def market_page(settings: Settings, store: Store, portfolio: Portfolio) -> None:
-    view = st.radio("Nội dung thị trường", ["Bảng điện Việt Nam", "Biểu đồ VN / US"], key="market_view", horizontal=True, label_visibility="collapsed")
-    if view == "Bảng điện Việt Nam":
-        live_priceboard(settings, store, portfolio)
-    else:
-        historical_market_page(settings, store, portfolio)
-
-
 @st.fragment(run_every=900)
 def news_panel(store: Store) -> None:
     first, second, third = st.columns([1, 2.4, 1.2], vertical_alignment="bottom")
@@ -828,16 +622,17 @@ def main() -> None:
     except ValueError as exc:
         st.error(str(exc))
         st.stop()
-    pages = {"Tổng quan": "Tổng quan", "Thị trường": "Bảng điện & biểu đồ", "Danh mục": "Danh mục & giao dịch", "Tin tức": "Tin tức", "Trợ lý AI": "Chat AI", "Thư viện sách": "Thư viện sách"}
+    pages = {"Thị trường": "Phân tích AI", "Danh mục": "Danh mục & giao dịch", "Trợ lý AI": "Lịch sử & hỏi đáp", "Thư viện sách": "Kiến thức từ sách", "Tổng quan": "Bản tin theo sách", "Tin tức": "Tin tức"}
     if st.session_state.get("page") not in pages:
-        st.session_state.page = "Tổng quan"
+        st.session_state.page = "Thị trường"
     with st.sidebar:
         st.markdown(f'<div class="side-brand"><span class="brand-mark" aria-hidden="true">{BRAND_MARK}</span><div class="brand-wordmark">Breakout <span>AI</span><small>Đầu tư có cơ sở</small></div></div>', unsafe_allow_html=True)
         page = st.radio("Điều hướng", list(pages), format_func=pages.get, key="page", label_visibility="collapsed")
         if page != "Trợ lý AI":
             st.markdown('<div class="side-status"><span class="status-dot"></span> Snapshot VN · Biểu đồ VN / US</div>', unsafe_allow_html=True)
-            with st.expander("Bản tin 07:30 · giờ Việt Nam"):
-                st.caption(schedule_caption(settings))
+            if page == "Tổng quan":
+                with st.expander("Bản tin 07:30 · giờ Việt Nam"):
+                    st.caption(schedule_caption(settings))
             st.caption("Lịch sử và danh mục lưu trên máy.")
     mode = "chat" if page == "Trợ lý AI" else "terminal"
     view = {"Tin tức": "news", "Thư viện sách": "books", "Danh mục": "portfolio", "Thị trường": "market", "Trợ lý AI": "chat"}.get(page, "overview")

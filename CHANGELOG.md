@@ -1,5 +1,15 @@
 # Changelog — Breakout AI
 
+## 0.9.0 — 2026-11-05
+
+- Đưa Phân tích AI/Phân tích biểu đồ thành trang đầu: chọn một mã, xem nến và nhận định; giữ bảng điện/công cụ hiện có ở luồng phụ.
+- Thêm observer thống nhất report, cấu trúc giá/thân bóng nến, facts/scenarios và tối đa 60 nến đóng cho UI, scanner và AI.
+- Thêm nút Đọc biểu đồ & nhận định. Model chỉ chọn action/ID bằng chứng/kịch bản trong JSON; kiểm tra hợp đồng trước khi dựng văn bản chuẩn, phản hồi không đạt giữ diễn giải theo quy tắc.
+- Lưu chart_context và interpretation theo lượt; polling không gọi model, đổi mã không trộn lịch sử. Demo ghi rõ là quy tắc.
+- Giữ trạng thái lỗi nguồn qua cache/rerun/instance và loại phản hồi cũ đã mất claim.
+- Tách market_page/ui_common khỏi app.py; dọn khai báo CSS đã bị ghi đè và viết lại tài liệu theo trọng tâm quan sát biểu đồ.
+- 633 kiểm thử đạt; HTTP trang/health 200 và compileall đạt. Chưa xử lý ảnh chụp biểu đồ, kiểm chứng model thật hoặc hiệu quả đầu tư. Kết quả kiểm thử cuối tại docs/TESTING.md; chưa có QA ảnh trình duyệt.
+
 ## 0.8.0 — 2026-10-19
 
 - Sửa cột bị ép/chồng do gap ngang khác cách Streamlit tính độ rộng; giới hạn selector panel để khối tổ tiên không nhận padding/border. Cột thường giữ gap 16px, lưới chính và panel có khoảng đệm riêng.

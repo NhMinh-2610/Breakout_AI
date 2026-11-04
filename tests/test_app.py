@@ -7,7 +7,7 @@ from breakout_ai.realtime import RealtimeService, BoardSnapshot
 from breakout_ai.intraday import IntradayService, IntradaySnapshot
 
 
-def app(monkeypatch, tmp_path):
+def app(monkeypatch, tmp_path, initial_page="Tổng quan"):
     monkeypatch.setenv("LLM_PROVIDER", "demo")
     monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "ui.sqlite3"))
     monkeypatch.setenv("WORKSPACE_ID", "test-ui")
@@ -18,7 +18,10 @@ def app(monkeypatch, tmp_path):
         monkeypatch.setattr(RealtimeService, "fetch", lambda self, symbols, force=False: BoardSnapshot(errors=["Nguồn snapshot thử nghiệm đang ngoại tuyến."]))
     if IntradayService.fetch.__module__ == "breakout_ai.intraday":
         monkeypatch.setattr(IntradayService, "fetch", lambda self, symbol, resolution="5", force=False: IntradaySnapshot(symbol, resolution=resolution, errors=["Nguồn nến thử nghiệm đang ngoại tuyến."]))
-    return AppTest.from_file(str(ROOT / "app.py"), default_timeout=20).run()
+    at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=20)
+    if initial_page is not None:
+        at.session_state["page"] = initial_page
+    return at.run()
 
 
 def button(at, label):

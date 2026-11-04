@@ -36,18 +36,25 @@ VN_MARKET_PROVIDER=kbs
 US_MARKET_PROVIDER=yahoo
 ```
 
-Model và quyền truy cập tùy tài khoản/máy; tài liệu không hardcode một model cho mọi người. Provider ngoài máy có thể nhận câu hỏi, lịch sử gần nhất và đoạn sách truy xuất. Bản tin điều kiện vẫn tính cục bộ. Không đưa key vào mã, Git hoặc chat hỗ trợ.
+Model và quyền truy cập tùy tài khoản/máy; tài liệu không hardcode một model cho mọi người. Trong luồng quan sát biểu đồ, provider ngoài máy có thể nhận câu hỏi, lịch sử gần nhất, tối đa 60 nến đã đóng, chỉ báo/bằng chứng/kịch bản và đoạn sách truy xuất. Bản tin điều kiện vẫn tính cục bộ. Không đưa key vào mã, Git hoặc chat hỗ trợ.
 
 ## Dữ liệu sau nâng cấp
 Nếu `data/stocklab.sqlite3` đã có, ứng dụng tiếp tục mở file này. Cài mới dùng `data/breakout_ai.sqlite3`. `DATABASE_PATH` đặt rõ được ưu tiên; giữ cấu hình cũ khi nâng cấp. [Chi tiết](MIGRATION.md).
 
 ## Thử ứng dụng
-Theo [hướng dẫn hằng ngày](DAILY_GUIDE.md) để thêm sách, danh mục và lịch 07:30. Câu hỏi thử: “Biên an toàn là gì?”, “Giá VN:FPT gần nhất?”.
+1. Mở **Phân tích AI → Phân tích biểu đồ**, chọn mã và khung nến.
+2. Xem cấu trúc nến, khối lượng và giới hạn dữ liệu; bấm **Đọc biểu đồ & nhận định**.
+3. Hỏi “Điều kiện xác nhận là gì?” hoặc “Điều gì làm kịch bản mất hiệu lực?”.
+4. Thêm vị thế ở Danh mục nếu cần rà soát bán; sách dùng bổ sung kiến thức, không phải điều kiện bắt buộc để đọc biểu đồ.
+
+Demo giải thích bằng quy tắc. Khi cấu hình model, AI chọn bằng chứng/kịch bản trong dữ liệu đã cung cấp; đầu ra sai hợp đồng bị từ chối và hiển thị rõ giới hạn. [Thiết kế observer](CHART_OBSERVER.md).
+
+Bản tin theo sách và lịch 07:30 là luồng phụ: [hướng dẫn hằng ngày](DAILY_GUIDE.md).
 
 | Lỗi | Xử lý |
 | --- | --- |
 | Thiếu .venv/module | Tạo môi trường, dùng Python trong .venv từ root dự án |
 | Chat chỉ trả trích đoạn | Demo đang hoạt động; cấu hình model nếu cần tổng hợp |
-| Không có gợi ý | Kiểm tra sách, nguyên tắc đã đối chiếu và dữ liệu |
+| Nhận định đang chờ | Kiểm tra thời gian giá/nến, nguồn lỗi, khối lượng và điều kiện chưa đạt; không ép tạo cơ hội |
 | Không thấy dữ liệu cũ | Kiểm tra DATABASE_PATH, WORKSPACE_ID; không xóa DB |
 | Task hỏng sau chuyển thư mục | Cài lại lịch, đối chiếu action và đường dẫn |

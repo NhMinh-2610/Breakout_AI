@@ -79,6 +79,7 @@ def workspace(monkeypatch, tmp_path):
     def open_board(enabled=True):
         monkeypatch.setenv("MARKET_DATA_ENABLED", "true" if enabled else "false")
         at = app(monkeypatch, tmp_path)
+        at.session_state["market_view"] = "Bảng điện Việt Nam"
         at.sidebar.radio[0].set_value("Thị trường").run()
         assert not at.exception
         return at

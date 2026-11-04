@@ -140,7 +140,7 @@ def test_provider_receives_captured_data_real_book_passages_and_bounded_history(
         captured.append(json.loads(request.content))
         return httpx.Response(200, json={
             "status": "completed",
-            "output": [{"type": "message", "content": [{"type": "output_text", "text": "Cần chờ dữ liệu mới."}]}],
+            "output": [{"type": "message", "content": [{"type": "output_text", "text": json.dumps({"action": "wait", "focus_fact_ids": ["evidence.1"], "risk_fact_ids": ["blocker.1"], "scenario_id": None})}]}],
             "usage": {"input_tokens": 123, "output_tokens": 17},
         })
     configured = replace(settings, provider="openai", model="test-model", api_key="test-only-key", max_history_messages=4)
@@ -169,7 +169,9 @@ def test_provider_receives_captured_data_real_book_passages_and_bounded_history(
     assert "không nâng wait/hold" in request["instructions"]
     assert "chỉ nói bán vị thế khi owned=true" in request["instructions"]
     assert context["analysis"]["summary"] in reply.text
-    assert reply.text.endswith("Cần chờ dữ liệu mới.")
+    assert "AI đọc cấu trúc biểu đồ" in reply.text
+    assert reply.interpretation["validated"] is True
+    assert reply.interpretation["focus_fact_ids"] == ["evidence.1"]
     assert reply.input_tokens == 123 and reply.output_tokens == 17
     assert len(history[1]["content"]) == 2200
 
@@ -192,3 +194,57 @@ def test_provider_failure_does_not_store_a_half_chat_or_charge_usage(settings, s
         chat_turn(store, MarketCopilot(configured, context, transport=transport),
                   "VIC đang có gì?", None, "VN", "Giải thích dễ hiểu")
     assert store.conversations() == [] and store.usage() == 0
+
+
+def test_model_receives_completed_chart_records_and_the_same_traceable_facts(settings, context):
+    context["chart"] = {
+        "symbol": "VIC", "resolution": "5", "currency": "VND",
+        "candles": [{"time": "2026-10-19T02:55:00+00:00", "open": 105000,
+                     "high": 106000, "low": 104000, "close": 105500,
+                     "volume": 12000, "complete": True, "interval_minutes": 5}],
+        "facts": [
+            {"id": "structure.recent", "text": "Đỉnh và đáy chưa cùng hướng.", "role": "observation"},
+            {"id": "data.readiness", "text": "Giá khớp đã cũ.", "role": "blocker"},
+        ],
+        "scenarios": [],
+    }
+    captured = []
+    def respond(request):
+        captured.append(json.loads(request.content))
+        selection = {"action": "wait", "focus_fact_ids": ["structure.recent"],
+                     "risk_fact_ids": ["data.readiness"], "scenario_id": None}
+        return httpx.Response(200, json={
+            "status": "completed",
+            "output": [{"type": "message", "content": [
+                {"type": "output_text", "text": json.dumps(selection)}]}],
+        })
+    configured = replace(settings, provider="openai", model="test-model", api_key="test-only-key")
+    reply = MarketCopilot(configured, context, transport=httpx.MockTransport(respond)).answer("Đọc cấu trúc VIC", [])
+    outgoing = json.loads(captured[0]["instructions"].split("CONTEXT_JSON:\n", 1)[1])
+    assert outgoing["chart"]["candles"] == context["chart"]["candles"]
+    assert outgoing["chart"]["facts"] == context["chart"]["facts"]
+    assert reply.chart_context == context["chart"]
+    assert reply.interpretation["validated"] is True
+    assert "Đỉnh và đáy chưa cùng hướng." in reply.text
+
+
+@pytest.mark.parametrize("output", [
+    "Nên MUA VIC ngay, giá mục tiêu 999999.",
+    '{"action":"watch_buy","focus_fact_ids":["evidence.1"],"risk_fact_ids":["blocker.1"],"scenario_id":null}',
+    '{"action":"wait","focus_fact_ids":["made.up"],"risk_fact_ids":["blocker.1"],"scenario_id":null}',
+    '{"action":"wait","focus_fact_ids":["evidence.1"],"risk_fact_ids":["blocker.1"],"scenario_id":null,"target":999999}',
+])
+def test_unverified_model_advice_never_reaches_the_saved_market_reply(settings, context, output):
+    def respond(request):
+        return httpx.Response(200, json={
+            "status": "completed",
+            "output": [{"type": "message", "content": [
+                {"type": "output_text", "text": output}]}],
+        })
+    configured = replace(settings, provider="openai", model="test-model", api_key="test-only-key")
+    reply = MarketCopilot(configured, context, transport=httpx.MockTransport(respond)).answer("VIC nên mua chưa?", [])
+    assert reply.screening[0]["action"] == "wait"
+    assert reply.interpretation["validated"] is False
+    assert "999999" not in reply.text and "Nên MUA VIC ngay" not in reply.text
+    assert "chưa vượt qua kiểm tra dữ liệu" in reply.text
+    assert reply.data_errors

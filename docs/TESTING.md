@@ -1,4 +1,24 @@
-# Kiểm thử Breakout AI 0.8
+# Kiểm thử Breakout AI 0.9
+
+## Bản 0.9 — 05/11/2026
+
+Trọng tâm: trang đầu đọc một biểu đồ, bối cảnh thống nhất và kiểm tra nhận định model. **633 kiểm thử đạt**, không lỗi, 79.896 giây; JUnit: .artifacts/observer-v09-tests.xml. Các mốc 509/366 dưới đây là lịch sử của bản trước.
+
+HTTP trang/health bản 0.9 đều 200 và tiến trình thử đã dừng. Compileall đạt; sáu module Python chính được định dạng với AST trước/sau giống hệt nhau. CSS kiểm tra 412 rule không lỗi. Chi tiết phát hiện và cách xử lý tại [Rà soát mã](CODE_REVIEW.md).
+
+Cấu hình thực tế được kiểm tra đang dùng provider demo, chưa chọn model/key hoặc model Ollama. Chất lượng model thật chưa được xác minh; không xem các response giả lập là kết quả thực tế.
+
+Các nhóm đã chạy tập trung: **55 ca intraday**, **39 ca observer**, **65 ca hợp đồng interpretation**, **24 ca copilot** và **7 ca giao diện phân tích chính**. Chúng dùng dữ liệu/response kiểm soát; không phải benchmark model thật.
+
+Phạm vi mới:
+
+- Lỗi tải sau cache mới không bị biến thành dữ liệu tốt ở rerun/instance tiếp theo; lỗi ban đầu không tạo giờ nhận giả. Phản hồi mất claim trả dữ liệu của chủ mới hoặc chờ.
+- Observer kiểm tra mã/khung/đơn vị, nến đóng và freshness; facts/scenarios đối chiếu được với dữ liệu nguồn và giữ bản sao bối cảnh.
+- Model không đổi action, dẫn ID lạ/trùng, bỏ blocker hoặc thêm văn bản/giá mục tiêu ngoài hợp đồng. Phản hồi không đạt giữ kết quả theo quy tắc.
+- Trang mặc định không chạy bản tin/tải cả bảng điện, chỉ lấy mã đang xem. Bấm nhận định mới gọi model/lưu lượt; rerun không gọi lặp hoặc sửa bối cảnh đã lưu.
+- Đổi mã tách nhận định/lịch sử; bảng điện và lịch sử chung vẫn truy cập được.
+
+Kiểm thử chức năng không xác minh bố cục bằng ảnh, chất lượng model thật hoặc hiệu quả đầu tư. Browser không có công cụ khả dụng trong phiên; chưa có QA screenshot/mobile. Tập đánh giá và backtest theo thời gian nằm trong [Backlog](../notes/BACKLOG.md).
 
 ## Phạm vi bản 0.8 — 19/10/2026
 

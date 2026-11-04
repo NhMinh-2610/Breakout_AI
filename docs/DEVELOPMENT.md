@@ -26,7 +26,15 @@ Provider trả Completion có text/usage, timeout và lỗi gọn; kiểm thử 
 Tin tức là luồng riêng; sách có quyền/nguồn/trang. Không dùng tiêu đề báo hoặc điểm heuristic như nguyên tắc đã học từ sách.
 
 ## UI
-CSS/nhận diện ở assets, nội dung ở app.py, phép tính biểu đồ ở dashboard.py. Dùng màu/chiều rộng trong [UI_UX](UI_UX.md). Giữ root chat_input để ghim phía dưới, callback để cập nhật số liệu trước render. Khi nâng Streamlit phải kiểm tra selector và responsive thực tế.
+app.py điều hướng và giữ các luồng phụ; market_page.py chứa các chế độ thị trường, ui_common.py giữ helper dùng chung. workbench.py trình bày chart/chat; observation.py tạo bối cảnh chuẩn, technical.py tính chỉ báo, interpretation.py kiểm tra lựa chọn của model. CSS/nhận diện ở assets; market_visuals.py dựng nến và dashboard.py giữ biểu đồ ngày. Dùng màu/chiều rộng trong [UI_UX](UI_UX.md). Giữ root chat_input để ghim phía dưới, callback để cập nhật số liệu trước render. Khi nâng Streamlit phải kiểm tra selector và responsive thực tế.
+
+## Hợp đồng quan sát biểu đồ
+
+Gọi observe_chart một lần cho cùng snapshot để lấy report và context. UI, scanner và copilot dùng chung kết quả; không tính một phiên bản tín hiệu riêng trong prompt hoặc widget.
+
+Đầu ra model chỉ gồm action, focus_fact_ids, risk_fact_ids và scenario_id. Kiểm tra action gốc, tham chiếu, rủi ro nguồn và trạng thái kịch bản trước render. Không nối văn bản thị trường tùy ý của model vào câu trả lời. Lưu chart_context/interpretation cùng lượt chat để có thể đối chiếu.
+
+Các ca hồi quy quan trọng: nguồn lỗi sau cache mới; phản hồi HTTP mất claim; nến đang hình thành; sai mã/đơn vị; nâng action hoặc dẫn fact lạ; model không bị gọi khi tự cập nhật UI. [Hợp đồng chi tiết](CHART_OBSERVER.md).
 
 ## Nợ kỹ thuật
 BM25/parser có phạm vi hạn chế; chưa kiểm tra từng trích dẫn model, đặt chỗ quota trước request hoặc điều chỉnh journal. Chưa có auth/billing/telemetry/retention/cloud scheduler, nguồn thương mại hoặc backtest. CI có cấu hình Windows/Ubuntu, nhưng chỉ gọi là CI đạt khi có kết quả chạy remote.

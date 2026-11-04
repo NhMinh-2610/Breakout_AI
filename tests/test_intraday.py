@@ -259,3 +259,128 @@ def test_empty_index_snapshot_does_not_claim_vnd_units():
     result = reader({}).fetch("VNINDEX")
     assert result.errors and result.source_url.endswith("/index")
     assert result.asset_type == "index" and result.price_unit == "points"
+
+
+@pytest.mark.parametrize("persistent", [False, True])
+def test_failed_forced_refresh_stays_stale_through_fast_reruns_and_pause(tmp_path, persistent):
+    """A fresh receipt time must not hide a newer failed attempt."""
+    current, calls, failed = [NOW], [], [False]
+    store = Store(tmp_path / "forced-failure.sqlite3") if persistent else None
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(503) if failed[0] else httpx.Response(200, json=source())
+    def make_reader():
+        return IntradayService(store, clock=lambda: current[0],
+                               transport=httpx.MockTransport(handler))
+    service = make_reader()
+    initial = service.fetch("VIC")
+    current[0] += timedelta(seconds=1)
+    failed[0] = True
+    failure = service.fetch("VIC", force=True)
+    assert failure.stale and failure.errors
+    current[0] += timedelta(seconds=1)
+    rereader = make_reader() if persistent else service
+    for result in (rereader.fetch("VIC"), rereader.cached("VIC")):
+        assert result.stale and result.errors
+        assert result.fetched_at == initial.fetched_at
+        assert result.candles == initial.candles
+    assert len(calls) == 2
+    # Only a successful new response clears the failure, preserving real time.
+    failed[0] = False
+    current[0] += timedelta(seconds=30)
+    recovered = rereader.fetch("VIC")
+    assert not recovered.stale and not recovered.errors
+    assert recovered.fetched_at == current[0].isoformat()
+    assert len(calls) == 3
+
+
+@pytest.mark.parametrize("persistent", [False, True])
+def test_initial_failure_is_saved_for_reruns_without_fabricating_receipt_time(tmp_path, persistent):
+    current, calls, failed = [NOW], [], [True]
+    store = Store(tmp_path / "empty-failure.sqlite3") if persistent else None
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(503) if failed[0] else httpx.Response(200, json=source())
+    def make_reader():
+        return IntradayService(store, clock=lambda: current[0],
+                               transport=httpx.MockTransport(handler))
+    service = make_reader()
+    first = service.fetch("VIC")
+    assert first.errors and first.stale and first.fetched_at is None
+    rereader = make_reader() if persistent else service
+    for result in (rereader.cached("VIC"), rereader.fetch("VIC")):
+        assert result is not None and result.stale
+        assert result.errors == first.errors
+        assert result.candles == [] and result.fetched_at is None
+    assert len(calls) == 1
+    failed[0] = False
+    current[0] += timedelta(seconds=31)
+    recovered = rereader.fetch("VIC")
+    assert recovered.candles and not recovered.errors and not recovered.stale
+    assert recovered.fetched_at == current[0].isoformat()
+
+
+@pytest.mark.parametrize("old_status", [200, 503])
+def test_late_old_response_returns_the_new_claims_snapshot(tmp_path, old_status):
+    """A fenced response must not appear in the UI after a newer owner won."""
+    store = Store(tmp_path / "fenced-candles.sqlite3")
+    current, calls = [NOW], []
+    newer = deepcopy(source())
+    newer["c"] = [202.0] * len(newer["c"])
+    def old_handler(request):
+        calls.append("old")
+        current[0] += timedelta(seconds=31)  # The old 30-second lease expired.
+        second = IntradayService(store, clock=lambda: current[0],
+            transport=httpx.MockTransport(lambda _: calls.append("new")
+                or httpx.Response(200, json=newer)))
+        result = second.fetch("VIC", force=True)
+        assert result.candles[-1].close == 202000
+        return httpx.Response(old_status, json=source())
+    first = IntradayService(store, clock=lambda: current[0],
+        transport=httpx.MockTransport(old_handler))
+    result = first.fetch("VIC")
+    assert result.from_cache and not result.errors and not result.stale
+    assert result.candles[-1].close == 202000
+    assert first.cached("VIC").candles[-1].close == 202000
+    assert result.fetched_at == current[0].isoformat()
+    assert calls == ["old", "new"]
+
+
+def test_late_old_response_without_new_snapshot_waits_instead_of_reusing_it(tmp_path):
+    store = Store(tmp_path / "fenced-without-result.sqlite3")
+    current = [NOW]
+    def old_handler(_):
+        current[0] += timedelta(seconds=31)
+        newer = IntradayService(store, clock=lambda: current[0])
+        assert newer._claim(("VIC", "5"), current[0], force=True)
+        return httpx.Response(200, json=source())
+    first = IntradayService(store, clock=lambda: current[0],
+        transport=httpx.MockTransport(old_handler))
+    result = first.fetch("VIC")
+    assert result.stale and result.errors and result.candles == []
+    assert result.fetched_at is None and first.cached("VIC") is None
+
+
+def test_failed_recent_cache_blocks_chart_signal_until_real_recovery(tmp_path):
+    from breakout_ai.observation import observe_chart
+    current, failed = [NOW], [False]
+    payload = source()
+    payload["o"][-1], payload["h"][-1] = 201.0, 206.0
+    payload["l"][-1], payload["c"][-1], payload["v"][-1] = 200.0, 205.0, 246800
+    store = Store(tmp_path / "analysis-failure-gate.sqlite3")
+    def handler(_):
+        return httpx.Response(503) if failed[0] else httpx.Response(200, json=payload)
+    def make_reader():
+        return IntradayService(store, clock=lambda: current[0],
+            transport=httpx.MockTransport(handler))
+    service = make_reader()
+    ready = service.fetch("VIC")
+    quote = {"symbol": "VIC", "last": 205000, "stale": False,
+             "source_timestamp": NOW.isoformat()}
+    assert observe_chart("VIC", ready, quote, now=current[0]).report.action == "watch_buy"
+    current[0] += timedelta(seconds=1)
+    failed[0] = True
+    service.fetch("VIC", force=True)
+    current[0] += timedelta(seconds=1)
+    report = observe_chart("VIC", make_reader().fetch("VIC"), quote, now=current[0]).report
+    assert report.action == "wait" and report.blockers
